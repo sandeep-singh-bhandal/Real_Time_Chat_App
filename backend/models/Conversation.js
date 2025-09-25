@@ -1,62 +1,24 @@
 import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema(
+const conversationSchema = new mongoose.Schema(
   {
-    phoneNumber: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    phoneSuffix: {
-      type: String,
-      unique: false,
-    },
-    userName: {
-      type: String,
-    },
-    email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      unique: true,
-      required: "Email address is required",
-      validate: {
-        validator: function (value) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        },
-        message: "Invalid email address format",
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
       },
+    ],
+    lastMessage: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
     },
-    emailOtp: {
-      type: String,
-    },
-    emailOtpExpiry: {
-      type: Date,
-    },
-    profilePicture: {
-      type: String,
-    },
-    userAbout: {
-      type: String,
-    },
-    lastSeen: {
-      type: Date,
-    },
-    isOnline: {
-      type: Boolean,
-      default: false,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    agreedToTerms: {
-      type: Boolean,
-      default: false,
+    unreadCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
-export default User;
+const Conversation = mongoose.model("Conversation", conversationSchema);
+export default Conversation;
