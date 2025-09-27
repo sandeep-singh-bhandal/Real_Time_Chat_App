@@ -2,58 +2,18 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    phoneNumber: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
-    phoneSuffix: {
-      type: String,
-      unique: false,
-    },
-    userName: {
-      type: String,
-    },
     email: {
       type: String,
-      trim: true,
-      lowercase: true,
       unique: true,
-      required: "Email address is required",
-      validate: {
-        validator: function (value) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-        },
-        message: "Invalid email address format",
-      },
+      required: true,
     },
-    emailOtp: {
+    fullName: { type: String, required: true },
+    password: {
       type: String,
+      required: true,
     },
-    emailOtpExpiry: {
-      type: Date,
-    },
-    profilePicture: {
-      type: String,
-    },
-    userAbout: {
-      type: String,
-    },
-    lastSeen: {
-      type: Date,
-    },
-    isOnline: {
-      type: Boolean,
-      default: false,
-    },
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
-    agreedToTerms: {
-      type: Boolean,
-      default: false,
-    },
+    profilePic: { type: String, default: "" },
+    bio: { type: String },
   },
   { timestamps: true }
 );
