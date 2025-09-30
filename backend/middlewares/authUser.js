@@ -1,19 +1,31 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export const authUser = async (req, res, next) => {
-  const { token } = req.cookies;
+export const protectRoute = async (req, res, next) => {
+  const { authToken } = req.cookies;
 
-  if (!token) return res.json({ success: false, message: "Please Login First" });
+  if (!authToken)
+    return res
+      .status(401)
+      .json({ success: false, message: "Please Login First" });
 
   try {
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY);
-    if (decodedToken.id) {
-      req.user = { userId: decodedToken.id };
+    const decodedToken = jwt.verify(authToken, process.env.JWT_SECRET_KEY);
+    if (decodedToken.userId) {
+      const user = await User.findById(decodedToken.userId).select("-password");
+      if (!user)
+        return res
+          .status(404)
+          .json({ success: false, message: "No User Found" });
+      req.user = user;
     } else {
-      res.json({ success: false, message: "Not Authorized" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Not Authorized" });
     }
     next();
   } catch (err) {
+    console.log(err.message);
     res.json({ success: false, message: err.message });
   }
 };
