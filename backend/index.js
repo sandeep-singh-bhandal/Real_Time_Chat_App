@@ -11,6 +11,7 @@ import messageRouter from "./routes/messageRoutes.js";
 const app = express();
 const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
+const allowedOrigins = ["http://localhost:5173"];
 
 // Connecting Mongo DB
 connectDB();
@@ -20,7 +21,7 @@ await connectCloudinary();
 
 // Middlewares Configuration
 app.use(express.json());
-app.use(cors());
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(cookieParser());
 
 // API to check server status
