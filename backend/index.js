@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRoutes.js";
 import { connectCloudinary } from "./utils/cloudinary.js";
+import messageRouter from "./routes/messageRoutes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -27,6 +28,7 @@ app.use("/api/status", (req, res) => res.send("Server is live!"));
 
 // API endpoints
 app.use("/api/user", userRouter);
+app.use("/api/message", messageRouter);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
