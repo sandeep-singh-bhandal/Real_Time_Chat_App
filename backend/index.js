@@ -5,6 +5,7 @@ import connectDB from "./utils/db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRoutes.js";
+import { connectCloudinary } from "./utils/cloudinary.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -12,6 +13,9 @@ const PORT = process.env.PORT || 3000;
 
 // Connecting Mongo DB
 connectDB();
+
+// Connecting To Cloudinary
+await connectCloudinary();
 
 // Middlewares Configuration
 app.use(express.json());

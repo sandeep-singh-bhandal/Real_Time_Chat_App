@@ -1,6 +1,7 @@
 import generateToken from "../utils/tokenGenerator.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import { v2 as cloudinary } from "cloudinary";
 
 //Registering User - /api/user/register
 export const register = async (req, res) => {
@@ -81,6 +82,40 @@ export const logout = async (req, res) => {
   }
 };
 
+//Check Auth - /api/user/is-auth
+export const isAuth = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const user = await User.findById(userId).select("-password");
+    return res.json({ success: true, user });
+  } catch (err) {
+    console.log(err.message);
+    res.json({ success: false, message: err.message });
+  }
+};
+
 export const updateProfile = async (req, res) => {
-  res.json({ ok: "k" });
+  const { profilePic } = req.body;
+  const { userId } = req.user;
+  
+  try {
+    if (!profilePic)
+      return res
+        .status(400)
+        .json({ success: false, message: "Profile pic is required" });
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePic: uploadResponse.secure_url,
+      },
+      { new: true }
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "Profile photo updated", updatedUser });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
 };
