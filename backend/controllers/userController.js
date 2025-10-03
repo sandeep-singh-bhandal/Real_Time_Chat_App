@@ -97,7 +97,7 @@ export const isAuth = async (req, res) => {
 export const updateProfile = async (req, res) => {
   const { profilePic } = req.body;
   const { userId } = req.user;
-  
+
   try {
     if (!profilePic)
       return res

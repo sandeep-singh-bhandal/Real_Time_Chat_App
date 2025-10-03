@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.withCredentials = true;
@@ -8,10 +9,9 @@ export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [isSigningIn, setIsSigningIn] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const navigate = useNavigate();
 
   const checkAuth = async () => {
     try {
@@ -25,16 +25,12 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  const signUp = async (data) => {};
 
   const value = {
     axios,
+    navigate,
     user,
     setUser,
-    isLoggingIn,
-    setIsLoggingIn,
-    isSigningIn,
-    setIsSigningIn,
     isUpdatingProfile,
     setIsUpdatingProfile,
     isCheckingAuth,

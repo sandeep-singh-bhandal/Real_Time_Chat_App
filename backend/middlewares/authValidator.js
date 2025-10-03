@@ -4,6 +4,7 @@ import { loginSchema } from "../validation/login.js";
 //Registration Validation Middleware
 export const registerValidator = async (req, res, next) => {
   const { name, email, password } = req.body;
+  
   if (!name)
     return res.json({
       success: false,
