@@ -95,25 +95,32 @@ export const isAuth = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { profilePic } = req.body;
+  const { name, email } = req.body;
+  const profilePic = req.file;
   const { userId } = req.user;
 
   try {
-    if (!profilePic)
-      return res
-        .status(400)
-        .json({ success: false, message: "Profile pic is required" });
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    let uploadResponse;
+    if (profilePic) {
+      uploadResponse = await cloudinary.uploader.upload(profilePic.path);
+    }
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      {
-        profilePic: uploadResponse.secure_url,
-      },
+      profilePic
+        ? {
+            name,
+            email,
+            profilePic: uploadResponse.secure_url,
+          }
+        : {
+            name,
+            email,
+          },
       { new: true }
     );
     res
       .status(200)
-      .json({ success: true, message: "Profile photo updated", updatedUser });
+      .json({ success: true, message: "Profile updated", updatedUser });
   } catch (err) {
     console.log(err.message);
     res.status(500).json({ success: false, message: err.message });
