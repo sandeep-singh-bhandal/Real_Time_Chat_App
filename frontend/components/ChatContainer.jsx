@@ -7,6 +7,7 @@ import { useAppContext } from "../context/AppContext";
 
 const ChatContainer = () => {
   const {
+    user,
     messages,
     getMessages,
     isMessagesLoading,
@@ -14,20 +15,22 @@ const ChatContainer = () => {
     subscribeToMessages,
     unsubscribeFromMessages,
   } = useAppContext();
+
   const messageEndRef = useRef(null);
 
+  // Fetch messages & subscribe
   useEffect(() => {
-    getMessages(selectedUser._id);
+    if (!selectedUser?._id) return;
 
+    getMessages(selectedUser._id);
     subscribeToMessages();
 
     return () => unsubscribeFromMessages();
-  }, [selectedUser._id, getMessages, subscribeToMessages, unsubscribeFromMessages]);
+  }, [selectedUser]);
 
+  // Scroll to last message when messages update
   useEffect(() => {
-    if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   if (isMessagesLoading) {
@@ -45,30 +48,38 @@ const ChatContainer = () => {
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {messages?.map((message, index) => (
           <div
-            key={message._id}
-            className={`chat ${message.senderId === authUser._id ? "chat-end" : "chat-start"}`}
-            ref={messageEndRef}
+            key={index}
+            className={`chat ${
+              message.senderId === user?._id ? "chat-end" : "chat-start"
+            }`}
+            ref={index === messages.length - 1 ? messageEndRef : null}
           >
-            <div className=" chat-image avatar">
+            <div className="chat-image avatar">
               <div className="size-10 rounded-full border">
                 <img
                   src={
-                    message.senderId === authUser._id
-                      ? authUser.profilePic || "/avatar.png"
-                      : selectedUser.profilePic || "/avatar.png"
+                    message.senderId === user?._id
+                      ? user?.profilePic || "/avatar.png"
+                      : selectedUser?.profilePic || "/avatar.png"
                   }
                   alt="profile pic"
                 />
               </div>
             </div>
+
             <div className="chat-header mb-1">
               <time className="text-xs opacity-50 ml-1">
                 {formatMessageTime(message.createdAt)}
               </time>
             </div>
-            <div className="chat-bubble flex flex-col">
+
+            <div
+              className={`${
+                message.senderId === user._id ? "bg-[#0093e9] text-white" : "bg-gray-300 text-black"
+              } chat-bubble flex flex-col `}
+            >
               {message.image && (
                 <img
                   src={message.image}
@@ -76,7 +87,7 @@ const ChatContainer = () => {
                   className="sm:max-w-[200px] rounded-md mb-2"
                 />
               )}
-              {message.text && <p>{message.text}</p>}
+              {message.text && <p>{String(message.text)}</p>}
             </div>
           </div>
         ))}
@@ -86,4 +97,5 @@ const ChatContainer = () => {
     </div>
   );
 };
+
 export default ChatContainer;

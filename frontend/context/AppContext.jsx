@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
+import toast from "react-hot-toast";
 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
 axios.defaults.withCredentials = true;
@@ -13,7 +14,7 @@ export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [messages, setMessages] = useState(true);
+  const [messages, setMessages] = useState([]);
   const [sidebarUsers, setSidebarUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isSidebarUsersLoading, setIsSidebarUsersLoading] = useState(false);
@@ -59,14 +60,38 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  const connectToSocket = () => {
-    if (!user?._id || socket?.connected) {
-      return;
+  const sendMessage = async (messageData) => {
+    try {
+      const { data } = await axios.post(
+        `/api/message/send/${selectedUser._id}`,
+        messageData
+      );
+      setMessages((prev) => [...prev, data.newMessage]);
+    } catch (error) {
+      toast.error(error);
     }
+  };
+
+  const subscribeToMessages = () => {
+    if (!selectedUser) return;
+    socket.off("newMessage"); // remove old listener
+    socket.on("newMessage", (newMsg) => {
+      setMessages((prev) => [...prev, newMsg]);
+    });
+  };
+
+  const unsubscribeFromMessages = () => {
+    socket.off("newMessage");
+  };
+
+  const connectToSocket = () => {
+    if (!user?._id || socket?.connected) return;
+
     socket = io(import.meta.env.VITE_BACKEND_URL, {
       auth: { userId: user._id },
       autoConnect: true,
     });
+
     socket.off("getOnlineUsers");
     socket.on("getOnlineUsers", (userIds) => {
       setOnlineUsers(userIds);
@@ -95,6 +120,7 @@ export const AppContextProvider = ({ children }) => {
     checkAuth,
     getSidebarUsers,
     getMessages,
+    sendMessage,
     messages,
     setMessages,
     sidebarUsers,
@@ -109,6 +135,8 @@ export const AppContextProvider = ({ children }) => {
     disconnectToSocket,
     onlineUsers,
     setOnlineUsers,
+    subscribeToMessages,
+    unsubscribeFromMessages,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
