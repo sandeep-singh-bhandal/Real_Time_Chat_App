@@ -1,5 +1,4 @@
 import express from "express";
-import http from "http";
 import "dotenv/config";
 import connectDB from "./utils/db.js";
 import cookieParser from "cookie-parser";
@@ -7,9 +6,8 @@ import cors from "cors";
 import userRouter from "./routes/userRoutes.js";
 import { connectCloudinary } from "./utils/cloudinary.js";
 import messageRouter from "./routes/messageRoutes.js";
+import { app, server, io } from "./utils/socket.js";
 
-const app = express();
-const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = ["http://localhost:5173"];
 

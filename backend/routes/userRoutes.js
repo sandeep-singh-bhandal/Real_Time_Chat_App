@@ -17,7 +17,7 @@ const userRouter = Router();
 
 userRouter.post("/signup", registerValidator, register);
 userRouter.post("/login", loginValidator, login);
-userRouter.post("/logout", logout);
+userRouter.get("/logout", logout);
 userRouter.get("/check-auth", protectRoute, isAuth);
 
 userRouter.patch(

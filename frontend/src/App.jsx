@@ -1,6 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import SignUpPage from "../pages/SignUpPage";
 import SettingsPage from "../pages/SettingsPage";
 import ProfilePage from "../pages/ProfilePage";
 import HomePage from "../pages/HomePage";
@@ -8,6 +7,7 @@ import { useAppContext } from "../context/AppContext";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
+import SignUpPage from "../Pages/SignUpPage";
 
 const App = () => {
   const { user, checkAuth, isCheckingAuth } = useAppContext();
@@ -15,6 +15,8 @@ const App = () => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  
   if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -24,7 +26,7 @@ const App = () => {
   }
 
   return (
-    <div>
+    <div data-theme="corporate">
       <Navbar />
       <Routes>
         <Route

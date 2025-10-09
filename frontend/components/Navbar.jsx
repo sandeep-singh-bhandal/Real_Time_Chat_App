@@ -1,10 +1,27 @@
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Navbar = () => {
-  const { user } = useAppContext();
-  const logout = () => {};
+  const { user, axios, navigate, setUser, disconnectToSocket } =
+    useAppContext();
+  const logout = async () => {
+    try {
+      const { data } = await axios.get("/api/user/logout");
+      if (data.success) {
+        setUser(null);
+        navigate("/");
+        toast.success(data.message);
+        disconnectToSocket();
+      } else {
+        toast.error(data.message);
+        setSignUpError(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <header
       className="border-b border-base-300 fixed w-full top-0 z-40 
@@ -46,7 +63,10 @@ const Navbar = () => {
                   <span className="hidden sm:inline">Profile</span>
                 </Link>
 
-                <button className="flex gap-2 items-center" onClick={logout}>
+                <button
+                  className="flex gap-2 items-center cursor-pointer"
+                  onClick={logout}
+                >
                   <LogOut className="size-5" />
                   <span className="hidden sm:inline">Logout</span>
                 </button>
