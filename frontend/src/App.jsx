@@ -10,13 +10,13 @@ import { Toaster } from "react-hot-toast";
 import SignUpPage from "../Pages/SignUpPage";
 
 const App = () => {
-  const { user, checkAuth, isCheckingAuth } = useAppContext();
+  const { user, checkAuth, isCheckingAuth, onlineUsers } = useAppContext();
 
   useEffect(() => {
     checkAuth();
   }, []);
+  console.log(onlineUsers);
 
-  
   if (isCheckingAuth) {
     return (
       <div className="flex items-center justify-center h-screen">

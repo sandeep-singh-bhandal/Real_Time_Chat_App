@@ -10,19 +10,18 @@ const Sidebar = () => {
     selectedUser,
     setSelectedUser,
     isSidebarUsersLoading,
+    onlineUsers,
   } = useAppContext();
 
-  //   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
   useEffect(() => {
     getSidebarUsers();
   }, []);
 
-  //   const filteredUsers =
-  //   showOnlineOnly
-  //     ? sidebarUsers.filter((user) => onlineUsers.includes(user._id))
-  //     : sidebarUsers;
+  const filteredUsers = showOnlineOnly
+    ? sidebarUsers.filter((user) => onlineUsers.includes(user._id))
+    : sidebarUsers;
 
   if (isSidebarUsersLoading) return <SidebarSkeleton />;
 
@@ -44,14 +43,14 @@ const Sidebar = () => {
             />
             <span className="text-sm">Show online only</span>
           </label>
-          {/* <span className="text-xs text-zinc-500">
+          <span className="text-xs text-zinc-500">
             ({onlineUsers.length - 1} online)
-          </span> */}
+          </span>
         </div>
       </div>
 
       <div className="overflow-y-auto w-full py-3">
-        {/* {filteredUsers.map((user) => (
+        {filteredUsers.map((user) => (
           <button
             key={user._id}
             onClick={() => setSelectedUser(user)}
@@ -90,7 +89,7 @@ const Sidebar = () => {
 
         {filteredUsers.length === 0 && (
           <div className="text-center text-zinc-500 py-4">No online users</div>
-        )} */}
+        )}
       </div>
     </aside>
   );

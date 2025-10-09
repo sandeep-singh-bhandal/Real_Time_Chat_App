@@ -18,6 +18,7 @@ export const AppContextProvider = ({ children }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isSidebarUsersLoading, setIsSidebarUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState([]);
   const navigate = useNavigate();
 
   const checkAuth = async () => {
@@ -38,7 +39,7 @@ export const AppContextProvider = ({ children }) => {
     setIsSidebarUsersLoading(true);
     try {
       const { data } = await axios.get("/api/message/user");
-      setSidebarUsers(data.users);
+      setSidebarUsers(data);
     } catch (error) {
       console.log(error);
     } finally {
@@ -59,11 +60,17 @@ export const AppContextProvider = ({ children }) => {
   };
 
   const connectToSocket = () => {
-    if (!user || socket?.connected) {
+    if (!user?._id || socket?.connected) {
       return;
     }
-    socket = io(import.meta.env.VITE_BACKEND_URL);
-    socket.connect();
+    socket = io(import.meta.env.VITE_BACKEND_URL, {
+      auth: { userId: user._id },
+      autoConnect: true,
+    });
+    socket.off("getOnlineUsers");
+    socket.on("getOnlineUsers", (userIds) => {
+      setOnlineUsers(userIds);
+    });
   };
 
   const disconnectToSocket = () => {
@@ -100,6 +107,8 @@ export const AppContextProvider = ({ children }) => {
     setIsMessagesLoading,
     connectToSocket,
     disconnectToSocket,
+    onlineUsers,
+    setOnlineUsers,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
