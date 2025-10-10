@@ -50,7 +50,7 @@ const ProfilePage = () => {
           <button
             type="submit"
             form="profileForm"
-            className="absolute right-4 btn bg-[#504FCF] text-white"
+            className="absolute right-4 btn bg-[#6464f9] text-white"
           >
             Save
           </button>

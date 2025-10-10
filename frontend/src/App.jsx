@@ -7,7 +7,7 @@ import { useAppContext } from "../context/AppContext";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
-import SignUpPage from "../Pages/SignUpPage";
+import SignUpPage from "../pages/SignUpPage";
 
 const App = () => {
   const { user, checkAuth, isCheckingAuth, theme } = useAppContext();
