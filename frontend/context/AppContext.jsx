@@ -62,9 +62,12 @@ export const AppContextProvider = ({ children }) => {
 
   const sendMessage = async (messageData) => {
     try {
+      const formData = new FormData();
+      formData.append("text", messageData.text);
+      formData.append("image", messageData.image);
       const { data } = await axios.post(
         `/api/message/send/${selectedUser._id}`,
-        messageData
+        formData
       );
       setMessages((prev) => [...prev, data.newMessage]);
     } catch (error) {

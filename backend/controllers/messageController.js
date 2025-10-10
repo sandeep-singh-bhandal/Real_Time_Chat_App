@@ -43,21 +43,23 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
+    const { text } = req.body;
+    const image = req.file;
     const { id: receiverId } = req.params;
     const senderId = req.user.userId;
 
-    let imageUrl;
+    let imageData = {};
     if (image) {
-      const uploadResponse = await cloudinary.uploader.upload(image);
-      imageUrl = uploadResponse.secure_url;
+      const uploadResponse = await cloudinary.uploader.upload(image.path);
+      imageData.url = uploadResponse.secure_url;
+      imageData.publicId = uploadResponse.public_id;
     }
 
     const newMessage = await Message.create({
       senderId,
       receiverId,
       text,
-      image: imageUrl,
+      imageData,
     });
 
     const receiverSocketId = getReceiverSocketId(receiverId);
@@ -67,7 +69,7 @@ export const sendMessage = async (req, res) => {
 
     res.status(201).json({ newMessage });
   } catch (err) {
-    console.log(err.message);
+    console.log(err);
     res.status(500).json({ success: false, message: err.message });
   }
 };

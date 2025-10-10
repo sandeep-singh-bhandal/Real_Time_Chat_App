@@ -4,7 +4,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 const ProfilePage = () => {
-  const { user, isUpdatingProfile, setIsUpdatingProfile, axios } =
+  const { user, isUpdatingProfile, setIsUpdatingProfile, axios, navigate } =
     useAppContext();
   const [profileImg, setProfileImg] = useState(null);
   const [updatedFormData, setUpdatedFormData] = useState({
@@ -35,8 +35,12 @@ const ProfilePage = () => {
       data.success ? toast.success(data.message) : toast.error(data.message);
     } catch (error) {
       console.log(error);
+    } finally {
+      setTimeout(() => {
+        navigate("/");
+      }, 600);
+      setIsUpdatingProfile(false);
     }
-    setIsUpdatingProfile(false);
   };
 
   return (
@@ -93,7 +97,7 @@ const ProfilePage = () => {
                   />
                 </label>
               </div>
-              <p className="text-sm text-zinc-400">
+              <p className="text-sm">
                 {isUpdatingProfile
                   ? "Please wait..."
                   : "Click the camera icon to update your photo"}
@@ -101,7 +105,7 @@ const ProfilePage = () => {
             </div>
             <div className="space-y-6">
               <div className="space-y-1.5">
-                <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <div className="text-sm flex items-center gap-2">
                   <User className="w-4 h-4" />
                   Full Name
                 </div>
@@ -114,7 +118,7 @@ const ProfilePage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <div className="text-sm flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email Address
                 </div>

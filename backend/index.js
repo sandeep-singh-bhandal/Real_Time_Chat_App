@@ -6,7 +6,7 @@ import cors from "cors";
 import userRouter from "./routes/userRoutes.js";
 import { connectCloudinary } from "./utils/cloudinary.js";
 import messageRouter from "./routes/messageRoutes.js";
-import { app, server, io } from "./utils/socket.js";
+import { app, server } from "./utils/socket.js";
 
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = ["http://localhost:5173"];

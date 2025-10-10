@@ -5,43 +5,23 @@ import { useAppContext } from "../context/AppContext";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
-  const [imagePreview, setImagePreview] = useState(null);
-  const fileInputRef = useRef(null);
+  const [image, setImage] = useState();
   const { sendMessage } = useAppContext();
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
+  const fileInputRef = useRef();
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !imagePreview) return;
+    if (!text.trim() && !image) return;
 
     try {
       await sendMessage({
         text: text.trim(),
-        image: imagePreview,
+        image,
       });
 
       // Clear form
       setText("");
-      setImagePreview(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      setImage();
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -49,18 +29,18 @@ const MessageInput = () => {
 
   return (
     <div className="p-4 w-full">
-      {imagePreview && (
+      {image && (
         <div className="mb-3 flex items-center gap-2">
           <div className="relative">
             <img
-              src={imagePreview}
+              src={URL.createObjectURL(image)}
               alt="Preview"
               className="w-20 h-20 object-cover rounded-lg border border-zinc-700"
             />
             <button
-              onClick={removeImage}
+              onClick={() => setImage()}
               className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-base-300
-              flex items-center justify-center"
+              flex items-center justify-center cursor-pointer"
               type="button"
             >
               <X className="size-3" />
@@ -83,13 +63,13 @@ const MessageInput = () => {
             accept="image/*"
             className="hidden"
             ref={fileInputRef}
-            onChange={handleImageChange}
+            onChange={(e) => setImage(e.target.files[0])}
           />
 
           <button
             type="button"
             className={`hidden sm:flex btn btn-circle
-                     ${imagePreview ? "text-emerald-500" : "text-zinc-400"}`}
+                     ${image ? "text-emerald-500" : "text-zinc-400"}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
@@ -98,7 +78,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="btn btn-circle bg-green-500 text-white"
-          disabled={!text.trim() && !imagePreview}
+          disabled={!text.trim() && !image}
         >
           <Send size={20} />
         </button>
