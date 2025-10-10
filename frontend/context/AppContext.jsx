@@ -76,6 +76,7 @@ export const AppContextProvider = ({ children }) => {
     if (!selectedUser) return;
     socket.off("newMessage"); // remove old listener
     socket.on("newMessage", (newMsg) => {
+      if (newMsg.senderId !== selectedUser._id) return;
       setMessages((prev) => [...prev, newMsg]);
     });
   };

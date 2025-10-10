@@ -15,7 +15,8 @@ import toast from "react-hot-toast";
 import { loginSchema } from "../../backend/validation/login";
 
 const SignUpPage = () => {
-  const { axios, navigate, setUser, connectToSocket } = useAppContext();
+  const { axios, navigate, setUser, connectToSocket, setSelectedUser } =
+    useAppContext();
   const [state, setState] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -53,10 +54,11 @@ const SignUpPage = () => {
       // API call
       setLoading(true);
       const { data } = await axios.post(`/api/user/${state}`, formData);
-          
+
       if (data.success) {
         navigate("/");
-        setUser(data.user)
+        setUser(data.user);
+        setSelectedUser(null);
         connectToSocket();
         toast.success(data.message);
       } else {

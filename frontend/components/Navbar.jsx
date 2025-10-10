@@ -11,7 +11,7 @@ const Navbar = () => {
       const { data } = await axios.get("/api/user/logout");
       if (data.success) {
         setUser(null);
-        navigate("/");
+        navigate("/signup");
         toast.success(data.message);
         disconnectToSocket();
       } else {

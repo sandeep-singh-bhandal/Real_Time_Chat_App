@@ -13,14 +13,14 @@ const ChatHeader = () => {
             <div className="size-10 rounded-full relative">
               <img
                 src={selectedUser.profilePic || "/avatar.png"}
-                alt={selectedUser.fullName}
+                alt={selectedUser.name}
               />
             </div>
           </div>
 
           {/* User info */}
           <div>
-            <h3 className="font-medium">{selectedUser.fullName}</h3>
+            <h3 className="font-medium">{selectedUser.name}</h3>
             <p className="text-sm text-base-content/70">
               {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
             </p>
@@ -28,7 +28,7 @@ const ChatHeader = () => {
         </div>
 
         {/* Close button */}
-        <button onClick={() => setSelectedUser(null)}>
+        <button className="cursor-pointer" onClick={() => setSelectedUser(null)}>
           <X />
         </button>
       </div>
