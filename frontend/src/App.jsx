@@ -10,13 +10,11 @@ import { Toaster } from "react-hot-toast";
 import SignUpPage from "../Pages/SignUpPage";
 
 const App = () => {
-  const { user, checkAuth, isCheckingAuth, onlineUsers } = useAppContext();
+  const { user, checkAuth, isCheckingAuth, theme } = useAppContext();
 
   useEffect(() => {
     checkAuth();
   }, []);
-
-  
 
   if (isCheckingAuth) {
     return (
@@ -27,7 +25,7 @@ const App = () => {
   }
 
   return (
-    <div data-theme="corporate">
+    <div data-theme={"corporate"}>
       <Navbar />
       <Routes>
         <Route

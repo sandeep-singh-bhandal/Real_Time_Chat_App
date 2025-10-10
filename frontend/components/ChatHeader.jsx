@@ -1,8 +1,27 @@
 import { X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useEffect, useState } from "react";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser, onlineUsers } = useAppContext();
+  const { selectedUser, setSelectedUser, onlineUsers, socket, user } =
+    useAppContext();
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!socket || !selectedUser?._id) return;
+
+    const handleTyping = ({ fromUserId, toUserId, isTyping }) => {
+      if (fromUserId === selectedUser._id && toUserId === user._id) {
+        setIsTyping(isTyping);
+      }
+    };
+
+    socket.on("typing...", handleTyping);
+
+    return () => {
+      socket.off("typing...", handleTyping);
+    };
+  }, [selectedUser]);
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -20,15 +39,22 @@ const ChatHeader = () => {
 
           {/* User info */}
           <div>
-            <h3 className="font-medium">{selectedUser.name}</h3>
+            <h3 className="font-medium">{selectedUser._id}</h3>
             <p className="text-sm text-base-content/70">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+              {isTyping
+                ? "typing..."
+                : onlineUsers.includes(selectedUser._id)
+                ? "Online"
+                : "Offline"}
             </p>
           </div>
         </div>
 
         {/* Close button */}
-        <button className="cursor-pointer" onClick={() => setSelectedUser(null)}>
+        <button
+          className="cursor-pointer"
+          onClick={() => setSelectedUser(null)}
+        >
           <X />
         </button>
       </div>

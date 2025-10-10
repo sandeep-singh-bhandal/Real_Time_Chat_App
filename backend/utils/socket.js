@@ -21,11 +21,25 @@ const userSocketMap = {}; // {userId: socketId}
 io.on("connection", (socket) => {
   const userId = socket.handshake.auth.userId;
   if (userId) userSocketMap[userId] = socket.id;
+  console.log("User connected! ", socket.id);
 
+  socket.on("typing", ({ fromUserId, toUserId, isTyping }) => {
+    const receiverSocketId = getReceiverSocketId(toUserId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("typing...", {
+        fromUserId,
+        toUserId,
+        isTyping,
+      });
+    }
+  });
+
+  
   // broadcasting that a user joined
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
   socket.on("disconnect", () => {
+    console.log("User disconnected! ", socket.id);
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
   });

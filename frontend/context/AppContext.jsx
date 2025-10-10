@@ -12,6 +12,7 @@ export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [theme, setTheme] = useState("corporate");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [messages, setMessages] = useState([]);
@@ -141,6 +142,9 @@ export const AppContextProvider = ({ children }) => {
     setOnlineUsers,
     subscribeToMessages,
     unsubscribeFromMessages,
+    theme,
+    setTheme,
+    socket
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

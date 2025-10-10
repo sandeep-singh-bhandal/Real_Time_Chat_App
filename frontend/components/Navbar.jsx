@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const Navbar = () => {
-  const { user, axios, navigate, setUser, disconnectToSocket } =
+  const { user, axios, navigate, setUser, disconnectToSocket, setTheme } =
     useAppContext();
   const logout = async () => {
     try {
@@ -55,6 +55,11 @@ const Navbar = () => {
 
             {user && (
               <>
+                {/* <button
+                  onClick={() => setTheme("coporate" ? "dark" : "coporate")}
+                >
+                  Theme change
+                </button> */}
                 <Link
                   to={"/profile"}
                   className={`btn btn-sm bg-transparent gap-2`}

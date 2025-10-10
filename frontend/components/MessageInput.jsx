@@ -1,12 +1,11 @@
 import { useRef, useState } from "react";
 import { Image, Send, X } from "lucide-react";
-import toast from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
 
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState();
-  const { sendMessage } = useAppContext();
+  const { sendMessage, socket, selectedUser, user } = useAppContext();
   const fileInputRef = useRef();
 
   const handleSendMessage = async (e) => {
@@ -25,6 +24,30 @@ const MessageInput = () => {
     } catch (error) {
       console.error("Failed to send message:", error);
     }
+  };
+
+  const typingTimeout = useRef(null);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setText(value);
+
+    if (!socket || !selectedUser) return;
+
+    socket.emit("typing", {
+      fromUserId: user._id,
+      toUserId: selectedUser._id,
+      isTyping: true,
+    });
+
+    clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.emit("typing", {
+        fromUserId: user._id,
+        toUserId: selectedUser._id,
+        isTyping: false,
+      });
+    }, 1000);
   };
 
   return (
@@ -56,7 +79,7 @@ const MessageInput = () => {
             className="w-full input input-bordered focus:outline-none rounded-lg input-sm sm:input-md"
             placeholder="Type a message..."
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={handleChange}
           />
           <input
             type="file"
