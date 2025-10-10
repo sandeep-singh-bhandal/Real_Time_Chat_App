@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { registerSchema } from "../validation/register";
 import toast from "react-hot-toast";
-import { loginSchema } from "../../backend/validation/login";
+import { loginSchema } from "../validation/login";
 
 const SignUpPage = () => {
   const { axios, navigate, setUser, connectToSocket, setSelectedUser } =
