@@ -1,14 +1,16 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { allowedOrigins } from "../index.js";
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins
+    origin: [
+      "http://localhost:5173",
+      "https://real-time-chat-app-pink-tau.vercel.app",
+    ],
   },
 });
 
@@ -35,7 +37,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  
   // broadcasting that a user joined
   io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
