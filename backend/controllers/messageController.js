@@ -36,8 +36,34 @@ export const getMessages = async (req, res) => {
 
     res.status(200).json({ messages });
   } catch (error) {
-    console.log(err.message);
-    res.status(500).json({ success: false, message: err.message });
+    console.log(error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getLatestMessage = async (req, res) => {
+  try {
+    const { id: receiverId } = req.params;
+    const senderId = req.user.userId;
+
+    const latestMessage = await Message.find({
+      $or: [
+        {
+          senderId,
+          receiverId,
+        },
+        {
+          senderId: receiverId,
+          receiverId: senderId,
+        },
+      ],
+    })
+      .sort({ createdAt: -1 })
+      .limit(1);
+    res.status(200).json({ latestMessage });
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -66,8 +92,6 @@ export const sendMessage = async (req, res) => {
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
-
-   
 
     res.status(201).json({ newMessage });
   } catch (err) {
