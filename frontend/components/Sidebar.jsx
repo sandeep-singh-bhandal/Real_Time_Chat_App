@@ -11,13 +11,42 @@ const Sidebar = () => {
     setSelectedUser,
     isSidebarUsersLoading,
     onlineUsers,
+    getLatestMessage,
   } = useAppContext();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [sidebarUsersLatestMessages, setSidebarUsersLatestMessages] = useState(
+    {}
+  );
+
+  const getEverySideBarUserLatestMsg = async () => {
+    const results = await Promise.all(
+      sidebarUsers.map(async (user) => {
+        const latestMsgData = await getLatestMessage(user?._id);
+        return {
+          id: user._id,
+          text: latestMsgData?.latestMessage?.[0]?.text || "",
+        };
+      })
+    );
+
+    const msgsObject = results.reduce((acc, curr) => {
+      acc[curr.id] = curr.text;
+      return acc;
+    }, {});
+
+    setSidebarUsersLatestMessages(msgsObject);
+  };
 
   useEffect(() => {
     getSidebarUsers();
   }, []);
+
+  useEffect(() => {
+    if (sidebarUsers.length > 0) {
+      getEverySideBarUserLatestMsg();
+    }
+  }, [sidebarUsers]);
 
   const filteredUsers = showOnlineOnly
     ? sidebarUsers.filter((user) => onlineUsers.includes(user._id))
@@ -50,7 +79,7 @@ const Sidebar = () => {
       </div>
 
       <div className="overflow-y-auto w-full py-3">
-        {filteredUsers.map((user) => (
+        {filteredUsers?.map((user) => (
           <button
             key={user._id}
             onClick={() => setSelectedUser(user)}
@@ -81,7 +110,8 @@ const Sidebar = () => {
             <div className="hidden lg:block text-left min-w-0">
               <div className="font-medium truncate">{user.name}</div>
               <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {sidebarUsersLatestMessages[user._id] ||
+                  (onlineUsers.includes(user._id) ? "Online" : "Offline")}
               </div>
             </div>
           </button>

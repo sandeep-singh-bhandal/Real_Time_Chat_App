@@ -21,6 +21,7 @@ export const AppContextProvider = ({ children }) => {
   const [isSidebarUsersLoading, setIsSidebarUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+
   const navigate = useNavigate();
 
   const checkAuth = async () => {
@@ -59,6 +60,11 @@ export const AppContextProvider = ({ children }) => {
     } finally {
       setIsMessagesLoading(false);
     }
+  };
+
+  const getLatestMessage = async (userId) => {
+    const { data } = await axios.get(`/api/message/get-latest/${userId}`);
+    return data;
   };
 
   const sendMessage = async (messageData) => {
@@ -125,6 +131,7 @@ export const AppContextProvider = ({ children }) => {
     checkAuth,
     getSidebarUsers,
     getMessages,
+    getLatestMessage,
     sendMessage,
     messages,
     setMessages,
@@ -144,7 +151,7 @@ export const AppContextProvider = ({ children }) => {
     unsubscribeFromMessages,
     theme,
     setTheme,
-    socket
+    socket,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
