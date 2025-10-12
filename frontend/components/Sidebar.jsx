@@ -7,50 +7,115 @@ const Sidebar = () => {
   const {
     getSidebarUsers,
     sidebarUsers,
+    setSidebarUsers,
     selectedUser,
     setSelectedUser,
     isSidebarUsersLoading,
     onlineUsers,
     getLatestMessage,
+    socket,
+    axios,
   } = useAppContext();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState({});
   const [sidebarUsersLatestMessages, setSidebarUsersLatestMessages] = useState(
     {}
   );
 
+  // Function to show latest message preview of each user in the sidebar
   const getEverySideBarUserLatestMsg = async () => {
-    const results = await Promise.all(
+    const data = await Promise.all(
       sidebarUsers.map(async (user) => {
         const latestMsgData = await getLatestMessage(user?._id);
+        const latestMsg = latestMsgData?.latestMessage?.[0];
         return {
-          id: user._id,
-          text: latestMsgData?.latestMessage?.[0]?.text || "",
+          ...user,
+          latestMsgText: latestMsg?.text || "",
+          latestMsgTime: latestMsg?.createdAt || null,
         };
       })
     );
 
-    const msgsObject = results.reduce((acc, curr) => {
-      acc[curr.id] = curr.text;
-      return acc;
-    }, {});
+    // sort users by latestMsgTime (newest first)
+    const sorted = [...data].sort((a, b) => {
+      if (!a.latestMsgTime && !b.latestMsgTime) return 0;
+      if (!a.latestMsgTime) return 1;
+      if (!b.latestMsgTime) return -1;
+      return new Date(b.latestMsgTime) - new Date(a.latestMsgTime);
+    });
 
-    setSidebarUsersLatestMessages(msgsObject);
+    setSidebarUsersLatestMessages(
+      sorted.reduce((acc, user) => {
+        acc[user._id] = user.latestMsgText;
+        return acc;
+      }, {})
+    );
+    setSidebarUsers(sorted);
+  };
+
+  // Function to get user's all unread messages
+  const getUnreadMessages = async () => {
+    const { data } = await axios.get("/api/message/get-unread-messages");
+    setUnreadMessages(data.unreadMessages.unreadCounts);
+  };
+
+  // Marking the messages as read
+  const markAsRead = async (chattingWithUserId) => {
+    await axios.patch(`/api/message/mark-as-read/${chattingWithUserId}`);
   };
 
   useEffect(() => {
     getSidebarUsers();
+    getUnreadMessages();
   }, []);
 
   useEffect(() => {
     if (sidebarUsers.length > 0) {
       getEverySideBarUserLatestMsg();
     }
-  }, [sidebarUsers]);
+  }, [sidebarUsers.length]);
 
+  // Real time message preview in sidebar
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleNewMessage = (message) => {
+      const senderId = message.senderId;
+
+      setUnreadMessages((prev) => ({
+        ...prev,
+        [senderId]:
+          selectedUser?._id === senderId ? 0 : (prev[senderId] || 0) + 1,
+      }));
+
+      setSidebarUsersLatestMessages((prev) => ({
+        ...prev,
+        [senderId]: message.text,
+      }));
+    };
+
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("newMessage", handleNewMessage); // cleanup
+    };
+  }, [socket, selectedUser]);
+
+  // Handling Showing only online users or not
   const filteredUsers = showOnlineOnly
-    ? sidebarUsers.filter((user) => onlineUsers.includes(user._id))
-    : sidebarUsers;
+    ? sidebarUsers
+        .filter((user) => onlineUsers.includes(user._id))
+        .sort((a, b) => {
+          const timeA = new Date(a.latestMsgTime || 0);
+          const timeB = new Date(b.latestMsgTime || 0);
+          return timeB - timeA;
+        })
+    : sidebarUsers.sort((a, b) => {
+        const timeA = new Date(a.latestMsgTime || 0);
+        const timeB = new Date(b.latestMsgTime || 0);
+        return timeB - timeA;
+      });
 
   if (isSidebarUsersLoading) return <SidebarSkeleton />;
 
@@ -82,38 +147,50 @@ const Sidebar = () => {
         {filteredUsers?.map((user) => (
           <button
             key={user._id}
-            onClick={() => setSelectedUser(user)}
+            onClick={() => {
+              setSelectedUser(user);
+              setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
+              markAsRead(user._id);
+            }}
             className={`
-              w-full p-3 flex items-center gap-3
-              hover:bg-base-300 transition-colors cursor-pointer
-              ${
-                selectedUser?._id === user._id
-                  ? "bg-base-300 ring-1 ring-base-300"
-                  : ""
-              }
-            `}
+                    w-full p-3 flex items-center gap-3
+                    hover:bg-base-300 transition-colors cursor-pointer
+                    ${
+                      selectedUser?._id === user._id
+                        ? "bg-base-300 ring-1 ring-base-300"
+                        : ""
+                    }
+                `}
           >
-            <div className="relative mx-auto lg:mx-0">
+            {/* Profile image wrapper */}
+            <div className="relative flex-shrink-0 w-12 h-12">
               <img
                 src={user.profilePic || "/avatar.png"}
                 alt={user.name}
-                className="size-12 object-cover rounded-full"
+                className="w-12 h-12 rounded-full object-cover object-center"
               />
+              {/* Green online dot */}
               {onlineUsers.includes(user._id) && (
                 <span
-                  className="absolute bottom-0 right-0 size-3 bg-green-500 
-                  rounded-full ring-2 ring-zinc-900"
+                  className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 
+          rounded-full ring-2 ring-white"
                 />
               )}
             </div>
 
-            <div className="hidden lg:block text-left min-w-0">
+            {/* Text section */}
+            <div className="hidden lg:flex flex-col text-left min-w-0 flex-1">
               <div className="font-medium truncate">{user.name}</div>
-              <div className="text-sm text-zinc-400">
+              <div className="text-sm text-zinc-400 truncate">
                 {sidebarUsersLatestMessages[user._id] ||
                   (onlineUsers.includes(user._id) ? "Online" : "Offline")}
               </div>
             </div>
+            {unreadMessages[user._id] > 0 && (
+              <span className="ml-auto p-1 px-2 rounded-full text-xs bg-green-500 text-white">
+                {unreadMessages[user._id]}
+              </span>
+            )}
           </button>
         ))}
 

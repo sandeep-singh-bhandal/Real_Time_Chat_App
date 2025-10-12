@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema(
     imageData: {
       type: {
         url: { type: String },
-        publicId: { type: String, unique: true },
+        publicId: { type: String},
       },
     },
   },

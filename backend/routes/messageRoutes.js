@@ -5,19 +5,23 @@ import {
   sendMessage,
   getUserForSidebar,
   getLatestMessage,
+  getUnreadCounts,
+  markAsRead,
 } from "../controllers/messageController.js";
 import { upload } from "../utils/multer.js";
 
 const messageRouter = Router();
 
 messageRouter.get("/user", protectRoute, getUserForSidebar);
-messageRouter.get("/:id", protectRoute, getMessages);
+messageRouter.get("/get-unread-messages", protectRoute, getUnreadCounts);
 messageRouter.get("/get-latest/:id", protectRoute, getLatestMessage);
+messageRouter.patch("/mark-as-read/:id", protectRoute, markAsRead);
 messageRouter.post(
   "/send/:id",
   protectRoute,
   upload.single("image"),
   sendMessage
 );
+messageRouter.get("/:id", protectRoute, getMessages);
 
 export default messageRouter;
