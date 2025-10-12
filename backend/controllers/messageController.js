@@ -88,12 +88,52 @@ export const sendMessage = async (req, res) => {
       imageData,
     });
 
+    await User.findByIdAndUpdate(receiverId, {
+      $inc: { [`unreadCounts.${senderId}`]: 1 },
+    });
+
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
 
     res.status(201).json({ newMessage });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getUnreadCounts = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const unreadMessages = await User.findById(userId).select("unreadCounts");
+    res.json({ unreadMessages });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const markAsRead = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { id: chattingWithUserId } = req.params;
+    await User.findByIdAndUpdate(userId, {
+      $set: { [`unreadCounts.${chattingWithUserId}`]: 0 },
+    });
+
+    await Message.updateMany(
+      { senderId: chattingWithUserId, receiverId: userId, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    io.to(getReceiverSocketId(chattingWithUserId)).emit(
+      "markMessageRead",
+      userId
+    );
+
+    res.json({ success: true });
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: err.message });

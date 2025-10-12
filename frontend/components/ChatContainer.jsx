@@ -4,16 +4,20 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 import { useAppContext } from "../context/AppContext";
+import { Check, CheckCheck } from "lucide-react";
 
 const ChatContainer = () => {
   const {
     user,
     messages,
+    setMessages,
     getMessages,
     isMessagesLoading,
     selectedUser,
     subscribeToMessages,
     unsubscribeFromMessages,
+    socket,
+    markAsRead,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
@@ -30,6 +34,18 @@ const ChatContainer = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    // if (!socket) return;
+    socket.on("markMessageRead", (chattingWithUserId) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.receiverId === chattingWithUserId ? { ...msg, isRead: true } : msg
+        )
+      );
+    });
+    return () => socket.off("markMessageRead");
+  }, [socket]);
 
   if (isMessagesLoading || !user?._id) {
     return (
@@ -89,7 +105,20 @@ const ChatContainer = () => {
                     className="sm:max-w-[200px] rounded-md mb-2"
                   />
                 )}
-                {message.text && <p>{String(message.text)}</p>}
+                {message.text && (
+                  <p
+                    className={`${message.senderId === user._id ? "mr-3" : ""}`}
+                  >
+                    {" "}
+                    {String(message.text)}
+                  </p>
+                )}
+                {message.senderId === user._id &&
+                  (message.isRead ? (
+                    <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                  ) : (
+                    <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                  ))}
               </div>
             </div>
           ))}

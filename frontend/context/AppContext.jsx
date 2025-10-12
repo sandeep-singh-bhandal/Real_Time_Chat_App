@@ -21,6 +21,7 @@ export const AppContextProvider = ({ children }) => {
   const [isSidebarUsersLoading, setIsSidebarUsersLoading] = useState(false);
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const [unreadMessages, setUnreadMessages] = useState({});
 
   const navigate = useNavigate();
 
@@ -60,6 +61,17 @@ export const AppContextProvider = ({ children }) => {
     } finally {
       setIsMessagesLoading(false);
     }
+  };
+
+  // Function to get user's all unread messages
+  const getUnreadMessages = async () => {
+    const { data } = await axios.get("/api/message/get-unread-messages");
+    setUnreadMessages(data.unreadMessages.unreadCounts);
+  };
+
+  // Marking the messages as read
+  const markAsRead = async (chattingWithUserId) => {
+    await axios.patch(`/api/message/mark-as-read/${chattingWithUserId}`);
   };
 
   const getLatestMessage = async (userId) => {
@@ -131,6 +143,10 @@ export const AppContextProvider = ({ children }) => {
     checkAuth,
     getSidebarUsers,
     getMessages,
+    unreadMessages,
+    setUnreadMessages,
+    getUnreadMessages,
+    markAsRead,
     getLatestMessage,
     sendMessage,
     messages,
