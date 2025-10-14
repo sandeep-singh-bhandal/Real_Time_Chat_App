@@ -26,10 +26,10 @@ io.on("connection", (socket) => {
   if (userId) userSocketMap[userId] = socket.id;
   console.log("User connected! ", socket.id);
 
-  socket.on("typing", ({ fromUserId, toUserId, isTyping }) => {
+  socket.on("typingTrigger", ({ fromUserId, toUserId, isTyping }) => {
     const receiverSocketId = getReceiverSocketId(toUserId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("typing...", {
+      io.to(receiverSocketId).emit("typingListener", {
         fromUserId,
         toUserId,
         isTyping,

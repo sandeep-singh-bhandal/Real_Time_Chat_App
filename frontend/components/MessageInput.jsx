@@ -34,7 +34,7 @@ const MessageInput = () => {
 
     if (!socket || !selectedUser) return;
 
-    socket.emit("typing", {
+    socket.emit("typingTrigger", {
       fromUserId: user._id,
       toUserId: selectedUser._id,
       isTyping: true,
@@ -42,7 +42,7 @@ const MessageInput = () => {
 
     clearTimeout(typingTimeout.current);
     typingTimeout.current = setTimeout(() => {
-      socket.emit("typing", {
+      socket.emit("typingTrigger", {
         fromUserId: user._id,
         toUserId: selectedUser._id,
         isTyping: false,

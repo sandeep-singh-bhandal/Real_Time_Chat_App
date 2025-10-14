@@ -16,10 +16,10 @@ const ChatHeader = () => {
       }
     };
 
-    socket.on("typing...", handleTyping);
+    socket.on("typingListener", handleTyping);
 
     return () => {
-      socket.off("typing...", handleTyping);
+      socket.off("typingListener", handleTyping);
     };
   }, [selectedUser]);
 

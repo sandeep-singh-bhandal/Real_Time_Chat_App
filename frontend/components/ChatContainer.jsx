@@ -36,7 +36,7 @@ const ChatContainer = () => {
   }, [messages]);
 
   useEffect(() => {
-    // if (!socket) return;
+    if (!socket) return;
     socket.on("markMessageRead", (chattingWithUserId) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -46,6 +46,11 @@ const ChatContainer = () => {
     });
     return () => socket.off("markMessageRead");
   }, [socket]);
+
+  useEffect(() => {
+    markAsRead(selectedUser._id);
+    console.log("ok");
+  }, [messages.length]);
 
   if (isMessagesLoading || !user?._id) {
     return (
