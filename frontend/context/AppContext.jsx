@@ -22,6 +22,9 @@ export const AppContextProvider = ({ children }) => {
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState({});
+  const [sidebarUsersLatestMessages, setSidebarUsersLatestMessages] = useState(
+    {}
+  );
 
   const navigate = useNavigate();
 
@@ -63,6 +66,43 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
+  // Function to show latest message preview of each user in the sidebar
+  const getEverySideBarUserLatestMsg = async () => {
+    const data = await Promise.all(
+      sidebarUsers.map(async (user) => {
+        const latestMsgData = await getLatestMessage(user?._id);
+        const latestMsg = latestMsgData?.latestMessage?.[0];
+        return {
+          ...user,
+          latestMsgText: latestMsg?.text || "",
+          latestMsgTime: latestMsg?.createdAt || null,
+          latestMsgIsRead: latestMsg?.isRead || false,
+          latestMsgReceiverId: latestMsg?.receiverId || null,
+        };
+      })
+    );
+
+    // sort users by latestMsgTime (newest first)
+    const sorted = [...data].sort((a, b) => {
+      if (!a.latestMsgTime && !b.latestMsgTime) return 0;
+      if (!a.latestMsgTime) return 1;
+      if (!b.latestMsgTime) return -1;
+      return new Date(b.latestMsgTime) - new Date(a.latestMsgTime);
+    });
+
+    setSidebarUsersLatestMessages(
+      sorted.reduce((acc, user) => {
+        acc[user._id] = {
+          text: user.latestMsgText,
+          isRead: user.latestMsgIsRead,
+          receiverId: user.latestMsgReceiverId,
+        };
+        return acc;
+      }, {})
+    );
+    setSidebarUsers(sorted);
+  };
+
   // Function to get user's all unread messages
   const getUnreadMessages = async () => {
     const { data } = await axios.get("/api/message/get-unread-messages");
@@ -89,6 +129,7 @@ export const AppContextProvider = ({ children }) => {
         formData
       );
       setMessages((prev) => [...prev, data.newMessage]);
+      getEverySideBarUserLatestMsg();
     } catch (error) {
       toast.error(error);
     }
@@ -148,6 +189,9 @@ export const AppContextProvider = ({ children }) => {
     getUnreadMessages,
     markAsRead,
     getLatestMessage,
+    sidebarUsersLatestMessages,
+    setSidebarUsersLatestMessages,
+    getEverySideBarUserLatestMsg,
     sendMessage,
     messages,
     setMessages,

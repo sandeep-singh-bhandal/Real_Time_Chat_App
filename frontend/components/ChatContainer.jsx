@@ -18,6 +18,7 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     socket,
     markAsRead,
+    getEverySideBarUserLatestMsg,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
@@ -37,6 +38,7 @@ const ChatContainer = () => {
 
   useEffect(() => {
     if (!socket) return;
+    socket.on("newMessage", () => getEverySideBarUserLatestMsg());
     socket.on("markMessageRead", (chattingWithUserId) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -44,12 +46,13 @@ const ChatContainer = () => {
         )
       );
     });
-    return () => socket.off("markMessageRead");
+    return () => {
+      socket.off("markMessageRead"), socket.off("newMessage");
+    };
   }, [socket]);
 
   useEffect(() => {
     markAsRead(selectedUser._id);
-    console.log("ok");
   }, [messages.length]);
 
   if (isMessagesLoading || !user?._id) {
