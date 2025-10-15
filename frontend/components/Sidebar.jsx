@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users } from "lucide-react";
+import { Check, CheckCheck, Users } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 
@@ -7,54 +7,21 @@ const Sidebar = () => {
   const {
     getSidebarUsers,
     sidebarUsers,
-    setSidebarUsers,
     selectedUser,
     setSelectedUser,
     isSidebarUsersLoading,
     onlineUsers,
-    getLatestMessage,
     socket,
     unreadMessages,
     setUnreadMessages,
     getUnreadMessages,
     markAsRead,
+    sidebarUsersLatestMessages,
+    setSidebarUsersLatestMessages,
+    getEverySideBarUserLatestMsg,
   } = useAppContext();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-  const [sidebarUsersLatestMessages, setSidebarUsersLatestMessages] = useState(
-    {}
-  );
-
-  // Function to show latest message preview of each user in the sidebar
-  const getEverySideBarUserLatestMsg = async () => {
-    const data = await Promise.all(
-      sidebarUsers.map(async (user) => {
-        const latestMsgData = await getLatestMessage(user?._id);
-        const latestMsg = latestMsgData?.latestMessage?.[0];
-        return {
-          ...user,
-          latestMsgText: latestMsg?.text || "",
-          latestMsgTime: latestMsg?.createdAt || null,
-        };
-      })
-    );
-
-    // sort users by latestMsgTime (newest first)
-    const sorted = [...data].sort((a, b) => {
-      if (!a.latestMsgTime && !b.latestMsgTime) return 0;
-      if (!a.latestMsgTime) return 1;
-      if (!b.latestMsgTime) return -1;
-      return new Date(b.latestMsgTime) - new Date(a.latestMsgTime);
-    });
-
-    setSidebarUsersLatestMessages(
-      sorted.reduce((acc, user) => {
-        acc[user._id] = user.latestMsgText;
-        return acc;
-      }, {})
-    );
-    setSidebarUsers(sorted);
-  };
 
   useEffect(() => {
     getSidebarUsers();
@@ -73,7 +40,6 @@ const Sidebar = () => {
 
     const handleNewMessage = (message) => {
       const senderId = message.senderId;
-
       setUnreadMessages((prev) => ({
         ...prev,
         [senderId]:
@@ -82,12 +48,15 @@ const Sidebar = () => {
 
       setSidebarUsersLatestMessages((prev) => ({
         ...prev,
-        [senderId]: message.text,
+        [senderId]: {
+          text: message.text,
+          isRead: message.isRead,
+          receiverId: message.receiverId,
+        },
       }));
     };
 
     socket.on("newMessage", handleNewMessage);
-
     return () => {
       socket.off("newMessage", handleNewMessage); // cleanup
     };
@@ -172,9 +141,19 @@ const Sidebar = () => {
             {/* Text section */}
             <div className="hidden lg:flex flex-col text-left min-w-0 flex-1">
               <div className="font-medium truncate">{user.name}</div>
-              <div className="text-sm text-zinc-400 truncate">
-                {sidebarUsersLatestMessages[user._id] ||
-                  (onlineUsers.includes(user._id) ? "Online" : "Offline")}
+              <div className="text-sm text-gray-500 truncate flex gap-1 items-center">
+                {user._id ===
+                  sidebarUsersLatestMessages[user._id]?.receiverId &&
+                  (sidebarUsersLatestMessages[user._id]?.isRead ? (
+                    <CheckCheck className="size-4" />
+                  ) : (
+                    <Check className="size-4" />
+                  ))}
+                {sidebarUsersLatestMessages[user._id]?.text
+                  ? sidebarUsersLatestMessages[user._id]?.text
+                  : onlineUsers.includes(user._id)
+                  ? "Online"
+                  : "Offline"}
               </div>
             </div>
             {unreadMessages[user._id] > 0 && (
