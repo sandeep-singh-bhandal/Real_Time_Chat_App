@@ -1,4 +1,4 @@
-import { LogOut, MessageSquare, Settings, User } from "lucide-react";
+import { LogOut, MessageSquare, Settings, User, User2 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -6,22 +6,6 @@ import toast from "react-hot-toast";
 const Navbar = () => {
   const { user, axios, navigate, setUser, disconnectToSocket, setTheme } =
     useAppContext();
-  const logout = async () => {
-    try {
-      const { data } = await axios.get("/api/user/logout");
-      if (data.success) {
-        setUser(null);
-        navigate("/signup");
-        toast.success(data.message);
-        disconnectToSocket();
-      } else {
-        toast.error(data.message);
-        setSignUpError(data.message);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
   return (
     <header
       className="border-b border-base-300 fixed w-full top-0 z-40 
@@ -42,39 +26,36 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              to={"/settings"}
-              className={`
-              btn btn-sm gap-2 bg-transparent transition-colors
-              
-              `}
-            >
-              <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Settings</span>
-            </Link>
-
             {user && (
               <>
-                {/* <button
-                  onClick={() => setTheme("coporate" ? "dark" : "coporate")}
-                >
-                  Theme change
-                </button> */}
-                <Link
-                  to={"/profile"}
-                  className={`btn btn-sm bg-transparent gap-2`}
-                >
-                  <User className="size-5" />
-                  <span className="hidden sm:inline">Profile</span>
+                <Link to={"/profile"}>
+                  <div className="dropdown dropdown-hover dropdown-end ">
+                    <div tabIndex={0} role="button" className="[&_li>a:active]:bg-transparent">
+                        <img
+                          className="aspect-[1/1] object-cover rounded-full w-10"
+                          src={user.profilePic}
+                          alt="Dp"
+                        />
+                    </div>
+                    <ul
+                      tabIndex="-1"
+                      className="dropdown-content menu bg-base-100 rounded-box z-1 w-42 p-2 shadow-sm border border-gray-400 "
+                    >
+                      <li className="flex gap-2">
+                        <div>
+                          <User className="size-4" />
+                          <Link to={"/profile"}>Profile</Link>
+                        </div>
+                      </li>
+                      <li className="flex gap-2">
+                        <div>
+                          <Settings className="size-4" />
+                          <Link to={"/settings"}>Settings</Link>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
                 </Link>
-
-                <button
-                  className="flex gap-2 items-center cursor-pointer"
-                  onClick={logout}
-                >
-                  <LogOut className="size-5" />
-                  <span className="hidden sm:inline">Logout</span>
-                </button>
               </>
             )}
           </div>

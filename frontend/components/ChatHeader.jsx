@@ -1,11 +1,19 @@
 import { X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { useEffect, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser, onlineUsers, socket, user } =
-    useAppContext();
+  const {
+    selectedUser,
+    setSelectedUser,
+    onlineUsers,
+    socket,
+    user,
+    setIsReceiverProfileOpen,
+  } = useAppContext();
   const [isTyping, setIsTyping] = useState(false);
+  const [lastSeenTime, setLastSeenTime] = useState(null);
 
   useEffect(() => {
     if (!socket || !selectedUser?._id) return;
@@ -17,16 +25,25 @@ const ChatHeader = () => {
     };
 
     socket.on("typingListener", handleTyping);
+    socket.on("userDisconnected", ({ userId, lastSeen }) => {
+      if (selectedUser._id === userId) {
+        setLastSeenTime(lastSeen);
+      }
+    });
 
     return () => {
-      socket.off("typingListener", handleTyping);
+      socket.off("typingListener");
+      socket.off("userDisconnected");
     };
   }, [selectedUser]);
 
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => setIsReceiverProfileOpen(true)}
+        >
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
@@ -40,12 +57,17 @@ const ChatHeader = () => {
           {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.name}</h3>
-            <p className="text-sm text-base-content/70">
+            <p className="text-sm text-base-content/70 truncate">
               {isTyping
                 ? "typing..."
                 : onlineUsers.includes(selectedUser._id)
                 ? "Online"
-                : "Offline"}
+                : `was online ${formatDistanceToNow(
+                    lastSeenTime || selectedUser.lastSeen,
+                    {
+                      addSuffix: true,
+                    }
+                  )}`}
             </p>
           </div>
         </div>

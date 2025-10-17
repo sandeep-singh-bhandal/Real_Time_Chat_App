@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema(
       of: Number,
       default: {},
     },
+    lastSeen: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

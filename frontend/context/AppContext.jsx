@@ -15,6 +15,7 @@ export const AppContextProvider = ({ children }) => {
   const [theme, setTheme] = useState("corporate");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isReceiverProfileOpen, setIsReceiverProfileOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [sidebarUsers, setSidebarUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -193,6 +194,8 @@ export const AppContextProvider = ({ children }) => {
     setSidebarUsersLatestMessages,
     getEverySideBarUserLatestMsg,
     sendMessage,
+    isReceiverProfileOpen,
+    setIsReceiverProfileOpen,
     messages,
     setMessages,
     sidebarUsers,
