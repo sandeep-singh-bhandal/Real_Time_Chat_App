@@ -1,19 +1,24 @@
-import {
-  X,
-  Phone,
-  MessageCircle,
-  Share2,
-  MapPin,
-  Clock,
-  Mail,
-} from "lucide-react";
+import { X, Phone, Clock, Mail } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
-// import { Button } from "@/components/ui/button";
+import { formatDistanceToNow } from "date-fns";
+import { useEffect, useState } from "react";
 
 export function ProfileView() {
-  const { setIsReceiverProfileOpen, selectedUser, onlineUsers } =
+  const { setIsReceiverProfileOpen, selectedUser, onlineUsers, socket } =
     useAppContext();
-  console.log(onlineUsers);
+  const [lastSeenTime, setLastSeenTime] = useState(null);
+
+  useEffect(() => {
+    if (!socket || !selectedUser?._id) return;
+    socket.on("userDisconnected", ({ userId, lastSeen }) => {
+      if (selectedUser._id === userId) {
+        setLastSeenTime(lastSeen);
+      }
+    });
+    return () => {
+      socket.off("userDisconnected");
+    };
+  }, [socket, selectedUser]);
 
   return (
     <div className="flex flex-col flex-1">
@@ -48,7 +53,12 @@ export function ProfileView() {
             <span className="text-xs font-medium text-gray-600">
               {onlineUsers.includes(selectedUser._id)
                 ? "Online"
-                : "online 7m ago"}
+                : `was online ${formatDistanceToNow(
+                    lastSeenTime || selectedUser.lastSeen,
+                    {
+                      addSuffix: true,
+                    }
+                  )}`}
             </span>
           </div>
           <div className="mt-4 text-gray-600">
@@ -95,7 +105,9 @@ export function ProfileView() {
             </div>
           </div>
 
-          <button className="bg-red-500 text-white py-2 rounded-lg mt-2 font-semibold cursor-pointer hover:bg-red-600 w-full">Block</button>
+          <button className="bg-red-500 text-white py-2 rounded-lg mt-2 font-semibold cursor-pointer hover:bg-red-600 w-full">
+            Block
+          </button>
         </div>
       </div>
     </div>
