@@ -62,12 +62,16 @@ const ChatHeader = () => {
                 ? "typing..."
                 : onlineUsers.includes(selectedUser._id)
                 ? "Online"
-                : `was online ${formatDistanceToNow(
-                    lastSeenTime || selectedUser.lastSeen,
-                    {
-                      addSuffix: true,
-                    }
-                  )}`}
+                : `was online ${
+                    lastSeenTime || selectedUser.lastSeen
+                      ? formatDistanceToNow(
+                          lastSeenTime || selectedUser?.lastSeen,
+                          {
+                            addSuffix: true,
+                          }
+                        )
+                      : "just now"
+                  }`}
             </p>
           </div>
         </div>

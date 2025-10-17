@@ -39,9 +39,9 @@ export function ProfileView() {
         <div className="bg-gradient-to-b from-blue-50 to-white px-6 py-8 text-center border-b border-gray-200">
           <div className="mb-4 flex justify-center">
             <img
-              src={selectedUser.profilePic || "/placeholder.svg"}
+              src={selectedUser.profilePic || "avatar.png"}
               alt={selectedUser.name}
-              className="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover"
+              className="w-32 h-32 rounded-full border-2 border-white shadow-lg object-cover"
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-1">

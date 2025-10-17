@@ -19,6 +19,7 @@ const Sidebar = () => {
     sidebarUsersLatestMessages,
     setSidebarUsersLatestMessages,
     getEverySideBarUserLatestMsg,
+    setIsReceiverProfileOpen,
   } = useAppContext();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
@@ -111,6 +112,7 @@ const Sidebar = () => {
               setSelectedUser(user);
               setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
               markAsRead(user._id);
+              setIsReceiverProfileOpen(false);
             }}
             className={`
                     w-full p-3 flex items-center gap-3
