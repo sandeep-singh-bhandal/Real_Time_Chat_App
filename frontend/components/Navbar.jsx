@@ -28,14 +28,18 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {user && (
               <>
-                <Link to={"/profile"}>
+                <div>
                   <div className="dropdown dropdown-hover dropdown-end ">
-                    <div tabIndex={0} role="button" className="[&_li>a:active]:bg-transparent">
-                        <img
-                          className="aspect-[1/1] object-cover rounded-full w-10"
-                          src={user.profilePic}
-                          alt="Dp"
-                        />
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="[&_li>a:active]:bg-transparent"
+                    >
+                      <img
+                        className="aspect-[1/1] object-cover rounded-full w-10"
+                        src={user.profilePic}
+                        alt="Dp"
+                      />
                     </div>
                     <ul
                       tabIndex="-1"
@@ -55,7 +59,7 @@ const Navbar = () => {
                       </li>
                     </ul>
                   </div>
-                </Link>
+                </div>
               </>
             )}
           </div>

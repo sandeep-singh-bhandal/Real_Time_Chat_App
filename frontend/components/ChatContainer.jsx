@@ -1,10 +1,20 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 import { useAppContext } from "../context/AppContext";
-import { Check, CheckCheck } from "lucide-react";
+import {
+  Check,
+  CheckCheck,
+  Clipboard,
+  Info,
+  Pen,
+  Pin,
+  Reply,
+  Trash,
+  X,
+} from "lucide-react";
 
 const ChatContainer = () => {
   const {
@@ -22,6 +32,7 @@ const ChatContainer = () => {
   } = useAppContext();
 
   const messageEndRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Fetch messages & subscribe
   useEffect(() => {
@@ -97,36 +108,110 @@ const ChatContainer = () => {
                   {formatMessageTime(message.createdAt)}
                 </time>
               </div>
+
               <div
-                className={`${
-                  message.imageData.url
-                    ? "bg-transparent"
-                    : message.senderId === user._id
-                    ? "bg-[#0093e9] text-white"
-                    : "bg-gray-300 text-black"
-                } chat-bubble flex flex-col `}
+                className={`dropdown dropdown-hover dropdown-${
+                  message.senderId === user._id ? "left" : "right"
+                }`}
               >
-                {message.imageData.url && (
-                  <img
-                    src={message.imageData.url}
-                    alt="Attachment"
-                    className="sm:max-w-[200px] rounded-md mb-2"
-                  />
-                )}
-                {message.text && (
-                  <p
-                    className={`${message.senderId === user._id ? "mr-3" : ""}`}
+                <div tabIndex={0} role="button">
+                  <div
+                    onMouseEnter={() => setIsOpen(true)}
+                    onMouseLeave={() => setIsOpen(false)}
+                    className={`${
+                      message.imageData.url
+                        ? "bg-transparent"
+                        : message.senderId === user._id
+                        ? "bg-[#0093e9] text-white"
+                        : "bg-gray-300 text-black"
+                    } chat-bubble flex flex-col max-w-60`}
                   >
-                    {" "}
-                    {String(message.text)}
-                  </p>
-                )}
-                {message.senderId === user._id &&
-                  (message.isRead ? (
-                    <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
-                  ) : (
-                    <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
-                  ))}
+                    {message.imageData.url && (
+                      <img
+                        src={message.imageData.url}
+                        alt="Attachment"
+                        className="sm:max-w-[200px] rounded-md mb-2"
+                      />
+                    )}
+                    {message.text && (
+                      <p
+                        className={`${
+                          message.senderId === user._id ? "mr-5" : ""
+                        }`}
+                      >
+                        {" "}
+                        {String(message.text)}
+                      </p>
+                    )}
+                    {message.senderId === user._id &&
+                      (message.isRead ? (
+                        <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                      ) : (
+                        <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                      ))}
+                  </div>
+                </div>
+                <ul
+                  onMouseEnter={() => setIsOpen(true)}
+                  onMouseLeave={() => setIsOpen(false)}
+                  tabIndex="-1"
+                  className={`dropdown-content ${
+                    isOpen ? "flex" : "hidden"
+                  } items-start menu px-0 bg-base-100 rounded-box absolute w-68 shadow-lg border border-gray-200 font-semibold`}
+                >
+                  <li onClick={() => setIsOpen(false)} className="w-full">
+                    <div className="flex gap-4">
+                      <Reply className="size-4" />
+                      <button>Reply</button>
+                    </div>
+                  </li>
+                  <li
+                    onClick={() => setIsOpen(false)}
+                    className="w-full border-b border-gray-200 pb-1 mb-1"
+                  >
+                    <div className="flex gap-4">
+                      <Clipboard className="size-4" />
+                      <button>Copy</button>
+                    </div>
+                  </li>
+
+                  <li onClick={() => setIsOpen(false)} className="w-full">
+                    <div className="flex gap-4">
+                      <Pen className="size-4" />
+                      <button>Edit</button>
+                    </div>
+                  </li>
+                  <li onClick={() => setIsOpen(false)} className="w-full">
+                    <div className="flex gap-4">
+                      <Pin className="size-4" />
+                      <button>Pin</button>
+                    </div>
+                  </li>
+                  <li
+                    onClick={() => setIsOpen(false)}
+                    className="w-full border-b border-gray-200 pb-1 mb-1"
+                  >
+                    <div className="flex gap-4 text-red-500">
+                      <Trash className="size-4" />
+                      <button>Delete</button>
+                    </div>
+                  </li>
+                  <li
+                    onClick={() => setIsOpen(false)}
+                    className="w-full border-b border-gray-200 pb-1 mb-1 text-blue-600"
+                  >
+                    <div className="flex gap-4">
+                      <Info className="size-4" />
+                      <button>Info</button>
+                    </div>
+                  </li>
+                  <li onClick={() => setIsOpen(false)} className="w-full">
+                    <div className="flex gap-4">
+                      <Trash className="size-4" />
+                      <button>Emojies</button>
+                    </div>
+                  </li>
+                </ul>
               </div>
             </div>
           ))}
