@@ -2,9 +2,10 @@ import NoChatSelected from "../components/NoChatSelected";
 import ChatContainer from "../components/ChatContainer";
 import { useAppContext } from "../context/AppContext";
 import Sidebar from "../components/Sidebar";
+import { ProfileView } from "../components/ProfileView";
 
 const HomePage = () => {
-  const { selectedUser } = useAppContext();
+  const { selectedUser, isReceiverProfileOpen } = useAppContext();
 
   return (
     <div className="h-screen bg-base-200">
@@ -13,7 +14,13 @@ const HomePage = () => {
           <div className="flex h-full rounded-lg overflow-hidden">
             <Sidebar />
 
-            {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
+            {!selectedUser ? (
+              <NoChatSelected />
+            ) : isReceiverProfileOpen ? (
+              <ProfileView />
+            ) : (
+              <ChatContainer />
+            )}
           </div>
         </div>
       </div>
