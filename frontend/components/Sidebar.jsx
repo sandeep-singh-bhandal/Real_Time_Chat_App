@@ -23,7 +23,7 @@ const Sidebar = () => {
   } = useAppContext();
 
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-
+  
   useEffect(() => {
     getSidebarUsers();
     getUnreadMessages();

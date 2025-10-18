@@ -7,14 +7,23 @@ import { useAppContext } from "../context/AppContext";
 import {
   Check,
   CheckCheck,
-  Clipboard,
-  Info,
-  Pen,
-  Pin,
   Reply,
+  Copy,
+  Edit,
   Trash,
-  X,
+  Pin,
+  Info,
+  Delete,
+  EllipsisVertical,
 } from "lucide-react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  DropdownSection,
+} from "@heroui/react";
+import toast from "react-hot-toast";
 
 const ChatContainer = () => {
   const {
@@ -29,10 +38,22 @@ const ChatContainer = () => {
     socket,
     markAsRead,
     getEverySideBarUserLatestMsg,
+    axios,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const prevMessagesLength = useRef(messages.length);
+  const [isEditingMessage, setIsEditingMessage] = useState(false);
+  const [newText, setNewText] = useState("");
+
+  const handleEditText = async (e) => {
+    e.preventDefault();
+    const { data } = await axios.patch("/api/message/edit-message", {
+      messageId: newText._id,
+      editedMessageText: newText.text,
+    });
+    data.success ? setIsEditingMessage(false) : toast.error(data.message);
+  };
 
   // Fetch messages & subscribe
   useEffect(() => {
@@ -44,7 +65,11 @@ const ChatContainer = () => {
 
   // Scroll to last message when messages update
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll only if a new message was added
+    if (messages.length > prevMessagesLength.current) {
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevMessagesLength.current = messages.length;
   }, [messages]);
 
   useEffect(() => {
@@ -57,8 +82,20 @@ const ChatContainer = () => {
         )
       );
     });
+    socket.on("messageEditted", ({ messageId, newText }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, text: newText, isEditted: true }
+            : msg
+        )
+      );
+    });
+
     return () => {
-      socket.off("markMessageRead"), socket.off("newMessage");
+      socket.off("markMessageRead");
+      socket.off("newMessage");
+      socket.off("messageEditted");
     };
   }, [socket]);
 
@@ -77,7 +114,7 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-auto">
+    <div className="flex-1 flex flex-col overflow-auto relative">
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -108,114 +145,166 @@ const ChatContainer = () => {
                   {formatMessageTime(message.createdAt)}
                 </time>
               </div>
-
               <div
-                className={`dropdown dropdown-hover dropdown-${
-                  message.senderId === user._id ? "left" : "right"
+                className={`group relative flex items-center gap-1 ${
+                  message.senderId === user._id && "flex-row-reverse"
                 }`}
               >
-                <div tabIndex={0} role="button">
-                  <div
-                    onMouseEnter={() => setIsOpen(true)}
-                    onMouseLeave={() => setIsOpen(false)}
-                    className={`${
-                      message.imageData.url
-                        ? "bg-transparent"
-                        : message.senderId === user._id
-                        ? "bg-[#0093e9] text-white"
-                        : "bg-gray-300 text-black"
-                    } chat-bubble flex flex-col max-w-60`}
-                  >
-                    {message.imageData.url && (
-                      <img
-                        src={message.imageData.url}
-                        alt="Attachment"
-                        className="sm:max-w-[200px] rounded-md mb-2"
-                      />
-                    )}
-                    {message.text && (
-                      <p
-                        className={`${
-                          message.senderId === user._id ? "mr-5" : ""
-                        }`}
-                      >
-                        {" "}
-                        {String(message.text)}
-                      </p>
-                    )}
-                    {message.senderId === user._id &&
-                      (message.isRead ? (
-                        <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
-                      ) : (
-                        <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
-                      ))}
-                  </div>
-                </div>
-                <ul
-                  onMouseEnter={() => setIsOpen(true)}
-                  onMouseLeave={() => setIsOpen(false)}
-                  tabIndex="-1"
-                  className={`dropdown-content ${
-                    isOpen ? "flex" : "hidden"
-                  } items-start menu px-0 bg-base-100 rounded-box absolute w-68 shadow-lg border border-gray-200 font-semibold`}
+                <div
+                  className={`${
+                    message.imageData.url
+                      ? "bg-transparent"
+                      : message.senderId === user._id
+                      ? "bg-[#0093e9] text-white"
+                      : "bg-gray-300 text-black"
+                  } chat-bubble flex `}
                 >
-                  <li onClick={() => setIsOpen(false)} className="w-full">
-                    <div className="flex gap-4">
-                      <Reply className="size-4" />
-                      <button>Reply</button>
-                    </div>
-                  </li>
-                  <li
-                    onClick={() => setIsOpen(false)}
-                    className="w-full border-b border-gray-200 pb-1 mb-1"
-                  >
-                    <div className="flex gap-4">
-                      <Clipboard className="size-4" />
-                      <button>Copy</button>
-                    </div>
-                  </li>
+                  {message.imageData.url && (
+                    <img
+                      src={message.imageData.url}
+                      alt="Attachment"
+                      className="sm:max-w-[200px] rounded-md mb-2"
+                    />
+                  )}
+                  {message.text && (
+                    <p
+                      className={`${
+                        message.senderId === user._id ? "mr-5" : ""
+                      }`}
+                    >
+                      {" "}
+                      {String(message.text)}
+                    </p>
+                  )}
+                  {message.isEditted && (
+                    <span className={`text-[11px] relative -bottom-2.5  ${message.senderId === user._id ? "text-gray-300 right-3" : "text-gray-500 -right-2"} italic`}>Edited</span>
+                  )}
+                  {message.senderId === user._id &&
+                    (message.isRead ? (
+                      <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                    ) : (
+                      <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                    ))}
+                </div>
 
-                  <li onClick={() => setIsOpen(false)} className="w-full">
-                    <div className="flex gap-4">
-                      <Pen className="size-4" />
-                      <button>Edit</button>
-                    </div>
-                  </li>
-                  <li onClick={() => setIsOpen(false)} className="w-full">
-                    <div className="flex gap-4">
-                      <Pin className="size-4" />
-                      <button>Pin</button>
-                    </div>
-                  </li>
-                  <li
-                    onClick={() => setIsOpen(false)}
-                    className="w-full border-b border-gray-200 pb-1 mb-1"
-                  >
-                    <div className="flex gap-4 text-red-500">
-                      <Trash className="size-4" />
-                      <button>Delete</button>
-                    </div>
-                  </li>
-                  <li
-                    onClick={() => setIsOpen(false)}
-                    className="w-full border-b border-gray-200 pb-1 mb-1 text-blue-600"
-                  >
-                    <div className="flex gap-4">
-                      <Info className="size-4" />
-                      <button>Info</button>
-                    </div>
-                  </li>
-                  <li onClick={() => setIsOpen(false)} className="w-full">
-                    <div className="flex gap-4">
-                      <Trash className="size-4" />
-                      <button>Emojies</button>
-                    </div>
-                  </li>
-                </ul>
+                <Dropdown>
+                  <DropdownTrigger className="active:outline-none focus:outline-none">
+                    <EllipsisVertical className="size-4 cursor-pointer opacity-0 group-hover:opacity-100  transition-opacity duration-300 " />
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="Static Actions" className="group">
+                    <DropdownSection showDivider>
+                      <DropdownItem
+                        key="reply"
+                        startContent={<Reply className="size-5" />}
+                      >
+                        Reply
+                      </DropdownItem>
+                      <DropdownItem
+                        key="copy"
+                        startContent={<Copy className="size-5" />}
+                      >
+                        Copy
+                      </DropdownItem>
+                    </DropdownSection>
+                    <DropdownSection showDivider>
+                      {message.senderId === user._id && (
+                        <DropdownItem
+                          key="edit"
+                          startContent={<Edit className="size-5" />}
+                          onClick={() => {
+                            setIsEditingMessage(true), setNewText(message);
+                          }}
+                        >
+                          Edit
+                        </DropdownItem>
+                      )}
+                      <DropdownItem
+                        key="pin"
+                        startContent={<Pin className="size-5" />}
+                      >
+                        Pin
+                      </DropdownItem>
+                      {message.senderId === user._id && (
+                        <DropdownItem
+                          key="delete"
+                          className="text-danger"
+                          color="danger"
+                          startContent={<Trash className="size-5" />}
+                        >
+                          Delete file
+                        </DropdownItem>
+                      )}
+                    </DropdownSection>
+                    <DropdownItem
+                      key="info"
+                      className="text-primary"
+                      color="primary"
+                      startContent={<Info className="size-5" />}
+                    >
+                      Info
+                    </DropdownItem>
+                    <DropdownItem
+                      key="emojis"
+                      startContent={<Delete className="size-5" />}
+                    >
+                      Emojies
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </div>
             </div>
           ))}
       </div>
+
+      {/* Edit message dialog box */}
+      {isEditingMessage && (
+        <div
+          onClick={() => setIsEditingMessage(false)}
+          className="absolute top-0 backdrop-blur-xs left-0 w-full h-full flex items-center justify-center z-50"
+        >
+          <div
+            className="flex flex-col bg-white shadow-md rounded-xl py-6 px-5 md:w-[370px] w-[300px] border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h1 className="text-lg text-left">Edit Text</h1>
+            <form
+              onSubmit={handleEditText}
+              id="editTextForm"
+              className="flex flex-col justify-center gap-4 mt-3 w-full"
+            >
+              <input
+                type="text"
+                name="editText"
+                className="border border-gray-400 w-full rounded-md h-10 px-3"
+                autoFocus
+                value={newText.text || ""}
+                onChange={(e) =>
+                  setNewText({
+                    ...newText,
+                    text: e.target.value,
+                  })
+                }
+              />
+              <div className="flex gap-7 justify-between">
+                <button
+                  type="button"
+                  className="w-full md:w-36 h-10 rounded-md border border-gray-300 bg-white text-gray-600 font-medium text-sm hover:bg-gray-100 active:scale-95 transition cursor-pointer"
+                  onClick={() => setIsEditingMessage(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  form="editTextForm"
+                  type="submit"
+                  className="w-full md:w-36 h-10 rounded-md text-white bg-blue-600 font-medium text-sm hover:bg-blue-700 active:scale-95 transition cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <MessageInput />
     </div>

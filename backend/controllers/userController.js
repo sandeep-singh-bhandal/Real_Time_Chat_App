@@ -95,7 +95,7 @@ export const isAuth = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { name, email } = req.body;
+  const { name, email, bio } = req.body;
   const profilePic = req.file;
   const { userId } = req.user;
 
@@ -110,11 +110,13 @@ export const updateProfile = async (req, res) => {
         ? {
             name,
             email,
+            bio,
             profilePic: uploadResponse.secure_url,
           }
         : {
             name,
             email,
+            bio,
           },
       { new: true }
     );

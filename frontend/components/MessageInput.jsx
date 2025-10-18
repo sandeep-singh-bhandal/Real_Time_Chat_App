@@ -5,6 +5,7 @@ import { useAppContext } from "../context/AppContext";
 const MessageInput = () => {
   const [text, setText] = useState("");
   const [image, setImage] = useState();
+  const [isEditingMessage, setIsEditingMessage] = useState(false);
   const { sendMessage, socket, selectedUser, user } = useAppContext();
   const fileInputRef = useRef();
 

@@ -104,6 +104,38 @@ export const sendMessage = async (req, res) => {
   }
 };
 
+export const editMessage = async (req, res) => {
+  try {
+    const { editedMessageText, messageId } = req.body;
+
+    // Find the message
+    const targetMessage = await Message.findById(messageId);
+
+    if (!targetMessage) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Message not found" });
+    }
+
+    // If the new message is same as the old one
+    if (editedMessageText === targetMessage.text) {
+      return res.json({ success: false, message: "No changes detected" });
+    }
+
+    // Update and save
+    targetMessage.text = editedMessageText;
+    targetMessage.isEditted = true;
+    await targetMessage.save();
+
+    io.emit("messageEditted", { messageId, newText: editedMessageText });
+
+    res.json({ success: true, message: "Message edited successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 export const getUnreadCounts = async (req, res) => {
   try {
     const { userId } = req.user;

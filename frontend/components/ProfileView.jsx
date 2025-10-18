@@ -1,12 +1,21 @@
 import { X, Phone, Clock, Mail } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
-import { formatDistanceToNow } from "date-fns";
+import { formatDate, formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
 
 export function ProfileView() {
-  const { setIsReceiverProfileOpen, selectedUser, onlineUsers, socket } =
-    useAppContext();
+  const {
+    setIsReceiverProfileOpen,
+    selectedUser,
+    onlineUsers,
+    socket,
+    messages,
+  } = useAppContext();
   const [lastSeenTime, setLastSeenTime] = useState(null);
+
+  const medias = messages.filter((message) => {
+    return message.imageData.url;
+  });
 
   useEffect(() => {
     if (!socket || !selectedUser?._id) return;
@@ -61,12 +70,28 @@ export function ProfileView() {
                   )}`}
             </span>
           </div>
-          <div className="mt-4 text-gray-600">
-            Hey there! I am using Chatty!
-          </div>
+          <div className="mt-4 text-gray-600">{selectedUser.bio}</div>
         </div>
-        <div className="flex justify-center items-center">
-          <h1>Media</h1>
+        <div className="flex flex-col gap-4 mt-4 mb-8">
+          <h1 className="text-center text-2xl text-gray-900 font-semibold">
+            Media
+          </h1>
+          <div className="flex gap-4 mx-4 rounded-lg bg-white p-5">
+            {medias
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+              .map((media, index) => (
+                <div key={index}>
+                  <img
+                    src={media.imageData.url}
+                    alt=""
+                    className="object-cover h-auto w-32 aspect-square rounded-md"
+                  />
+                  <div className="mt-1 text-center">
+                    {formatDate(media.createdAt, "dd MMM, yyyy")}
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
         {/* Information Section */}
         <div className="px-6 py-6 space-y-4">
@@ -78,17 +103,6 @@ export function ProfileView() {
               <Mail className="w-4 h-4 text-blue-600" />
               <span className="text-sm text-gray-700">
                 {selectedUser.email}
-              </span>
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Phone
-            </p>
-            <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors">
-              <Phone className="w-4 h-4 text-blue-600" />
-              <span className="text-sm text-gray-700">
-                {selectedUser.phone}
               </span>
             </div>
           </div>
