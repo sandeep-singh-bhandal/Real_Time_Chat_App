@@ -112,7 +112,9 @@ export const editMessage = async (req, res) => {
     const targetMessage = await Message.findById(messageId);
 
     if (!targetMessage) {
-      return res.status(404).json({ success: false, message: "Message not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Message not found" });
     }
 
     // If the new message is same as the old one
@@ -122,7 +124,10 @@ export const editMessage = async (req, res) => {
 
     // Update and save
     targetMessage.text = editedMessageText;
+    targetMessage.isEditted = true;
     await targetMessage.save();
+
+    io.emit("messageEditted", { messageId, newText: editedMessageText });
 
     res.json({ success: true, message: "Message edited successfully" });
   } catch (err) {
@@ -130,7 +135,6 @@ export const editMessage = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
-
 
 export const getUnreadCounts = async (req, res) => {
   try {

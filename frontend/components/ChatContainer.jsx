@@ -42,6 +42,7 @@ const ChatContainer = () => {
   } = useAppContext();
 
   const messageEndRef = useRef(null);
+  const prevMessagesLength = useRef(messages.length);
   const [isEditingMessage, setIsEditingMessage] = useState(false);
   const [newText, setNewText] = useState("");
 
@@ -51,9 +52,7 @@ const ChatContainer = () => {
       messageId: newText._id,
       editedMessageText: newText.text,
     });
-    data.success
-      ? (setIsEditingMessage(false))
-      : toast.error(data.message);
+    data.success ? setIsEditingMessage(false) : toast.error(data.message);
   };
 
   // Fetch messages & subscribe
@@ -66,7 +65,11 @@ const ChatContainer = () => {
 
   // Scroll to last message when messages update
   useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroll only if a new message was added
+    if (messages.length > prevMessagesLength.current) {
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevMessagesLength.current = messages.length;
   }, [messages]);
 
   useEffect(() => {
@@ -79,8 +82,20 @@ const ChatContainer = () => {
         )
       );
     });
+    socket.on("messageEditted", ({ messageId, newText }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, text: newText, isEditted: true }
+            : msg
+        )
+      );
+    });
+
     return () => {
-      socket.off("markMessageRead"), socket.off("newMessage");
+      socket.off("markMessageRead");
+      socket.off("newMessage");
+      socket.off("messageEditted");
     };
   }, [socket]);
 
@@ -142,7 +157,7 @@ const ChatContainer = () => {
                       : message.senderId === user._id
                       ? "bg-[#0093e9] text-white"
                       : "bg-gray-300 text-black"
-                  } chat-bubble flex flex-col `}
+                  } chat-bubble flex `}
                 >
                   {message.imageData.url && (
                     <img
@@ -154,12 +169,15 @@ const ChatContainer = () => {
                   {message.text && (
                     <p
                       className={`${
-                        message.senderId === user._id ? "mr-3" : ""
+                        message.senderId === user._id ? "mr-5" : ""
                       }`}
                     >
                       {" "}
                       {String(message.text)}
                     </p>
+                  )}
+                  {message.isEditted && (
+                    <span className={`text-[11px] relative -bottom-2.5  ${message.senderId === user._id ? "text-gray-300 right-3" : "text-gray-500 -right-2"} italic`}>Edited</span>
                   )}
                   {message.senderId === user._id &&
                     (message.isRead ? (
@@ -168,6 +186,7 @@ const ChatContainer = () => {
                       <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
                     ))}
                 </div>
+
                 <Dropdown>
                   <DropdownTrigger className="active:outline-none focus:outline-none">
                     <EllipsisVertical className="size-4 cursor-pointer opacity-0 group-hover:opacity-100  transition-opacity duration-300 " />
@@ -239,8 +258,14 @@ const ChatContainer = () => {
 
       {/* Edit message dialog box */}
       {isEditingMessage && (
-        <div className="absolute top-0 backdrop-blur-xs left-0 w-full h-full flex items-center justify-center z-50">
-          <div className="flex flex-col bg-white shadow-md rounded-xl py-6 px-5 md:w-[370px] w-[300px] border border-gray-200">
+        <div
+          onClick={() => setIsEditingMessage(false)}
+          className="absolute top-0 backdrop-blur-xs left-0 w-full h-full flex items-center justify-center z-50"
+        >
+          <div
+            className="flex flex-col bg-white shadow-md rounded-xl py-6 px-5 md:w-[370px] w-[300px] border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             <h1 className="text-lg text-left">Edit Text</h1>
             <form
               onSubmit={handleEditText}
