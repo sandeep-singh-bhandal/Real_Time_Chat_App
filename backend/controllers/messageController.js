@@ -41,32 +41,6 @@ export const getMessages = async (req, res) => {
   }
 };
 
-export const getLatestMessage = async (req, res) => {
-  try {
-    const { id: receiverId } = req.params;
-    const senderId = req.user.userId;
-
-    const latestMessage = await Message.find({
-      $or: [
-        {
-          senderId,
-          receiverId,
-        },
-        {
-          senderId: receiverId,
-          receiverId: senderId,
-        },
-      ],
-    })
-      .sort({ createdAt: -1 })
-      .limit(1);
-    res.status(200).json({ latestMessage });
-  } catch (error) {
-    console.log(error.message);
-    res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 export const sendMessage = async (req, res) => {
   try {
     const { text } = req.body;
@@ -130,6 +104,32 @@ export const editMessage = async (req, res) => {
     io.emit("messageEditted", { messageId, newText: editedMessageText });
 
     res.json({ success: true, message: "Message edited successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+export const deleteMessage = async (req, res) => {
+  try {
+    const { deletedMessageId } = req.params;
+
+    // Find the message
+    const targetMessage = await Message.findById(deletedMessageId);
+
+    if (!targetMessage) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Message not found" });
+    }
+
+    // Mark isDelete flag true
+    targetMessage.isDeleted = true;
+    targetMessage.isEditted = false;
+    await targetMessage.save();
+
+    io.emit("messageDeleted", { deletedMessageId });
+
+    res.json({ success: true, message: "Message deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: err.message });
