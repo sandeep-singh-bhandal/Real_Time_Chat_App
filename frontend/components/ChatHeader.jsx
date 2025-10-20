@@ -57,7 +57,7 @@ const ChatHeader = () => {
           {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.name}</h3>
-            <p className="text-sm text-base-content/70 truncate">
+            <p className={`text-sm text-base-content/70 truncate ${isTyping && "text-blue-500"}`}>
               {isTyping
                 ? "typing..."
                 : onlineUsers.includes(selectedUser._id)

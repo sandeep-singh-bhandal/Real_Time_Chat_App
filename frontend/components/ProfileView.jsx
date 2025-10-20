@@ -72,27 +72,29 @@ export function ProfileView() {
           </div>
           <div className="mt-4 text-gray-600">{selectedUser.bio}</div>
         </div>
-        <div className="flex flex-col gap-4 mt-4 mb-8">
-          <h1 className="text-center text-2xl text-gray-900 font-semibold">
-            Media
-          </h1>
-          <div className="flex gap-4 mx-4 rounded-lg bg-white p-5">
-            {medias
-              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-              .map((media, index) => (
-                <div key={index}>
-                  <img
-                    src={media.imageData.url}
-                    alt=""
-                    className="object-cover h-auto w-32 aspect-square rounded-md"
-                  />
-                  <div className="mt-1 text-center">
-                    {formatDate(media.createdAt, "dd MMM, yyyy")}
+        {medias.length > 0 && (
+          <div className="flex flex-col gap-4 mt-4 mb-8">
+            <h1 className="text-center text-2xl text-gray-900 font-semibold">
+              Media
+            </h1>
+            <div className="flex gap-4 mx-4 rounded-lg bg-white p-5">
+              {medias
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((media, index) => (
+                  <div key={index}>
+                    <img
+                      src={media.imageData.url}
+                      alt=""
+                      className="object-cover h-auto w-32 aspect-square rounded-md"
+                    />
+                    <div className="mt-1 text-center">
+                      {formatDate(media.createdAt, "dd MMM, yyyy")}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
-        </div>
+        )}
         {/* Information Section */}
         <div className="px-6 py-6 space-y-4">
           <div>
