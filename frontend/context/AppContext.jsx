@@ -80,6 +80,7 @@ export const AppContextProvider = ({ children }) => {
       const formData = new FormData();
       formData.append("text", messageData.text);
       formData.append("image", messageData.image);
+      formData.append("replyTo", JSON.stringify(messageData.replyTo));
       const { data } = await axios.post(
         `/api/message/send/${selectedUser._id}`,
         formData
@@ -92,9 +93,8 @@ export const AppContextProvider = ({ children }) => {
 
   const subscribeToMessages = () => {
     if (!selectedUser) return;
-    socket.off("newMessage"); // remove old listener
     socket.on("newMessage", (newMsg) => {
-      if (newMsg.senderId !== selectedUser._id) return;
+      if (newMsg.senderId._id !== selectedUser._id) return;
       setMessages((prev) => [...prev, newMsg]);
     });
   };
