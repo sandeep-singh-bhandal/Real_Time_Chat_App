@@ -18,8 +18,11 @@ const App = () => {
 
   if (isCheckingAuth) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex flex-col items-center justify-center h-screen">
         <Loader className="size-10 animate-spin" />
+        <span className="mt-2">
+          Please wait a bit longer, backend could be on sleep mode ( 10seconds max )
+        </span>
       </div>
     );
   }
