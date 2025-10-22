@@ -30,7 +30,7 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 | Layer      | Technologies           |
 | ---------- | -------------------- |
-| Frontend   | React.js, Tailwind CSS |
+| Frontend   | React.js, Tailwind CSS, HeroUI, DaisyUI, PrebuiltUI |
 | Backend    | Node.js, Express.js JWT, Zod |
 | Websockets | Socket.io |
 | Database   | MongoDB               |
