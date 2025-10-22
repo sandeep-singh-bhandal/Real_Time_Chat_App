@@ -43,6 +43,15 @@ export const getMessages = async (req, res) => {
           { path: "receiverId", select: "name profilePic" },
           { path: "imageData", select: "url" },
         ],
+      })
+      .populate({
+        path: "readBy",
+        select: "userId",
+        populate: { path: "userId", select: "name profilePic" },
+      }).populate({
+        path: "reactions",
+        select: "userId",
+        populate: { path: "userId", select: "name profilePic" },
       });
 
     res.status(200).json({ messages });
@@ -77,14 +86,14 @@ export const sendMessage = async (req, res) => {
 
     // Populate sender, receiver, and reply info for frontend
     const populatedMessage = await newMessage.populate([
-      { path: "senderId", select: "name profilePic" },
-      { path: "receiverId", select: "name profilePic" },
+      { path: "senderId", select: "name" },
+      { path: "receiverId", select: "name" },
       {
         path: "replyTo",
         select: "text senderId receiverId imageData",
         populate: [
-          { path: "senderId", select: "name profilePic" },
-          { path: "receiverId", select: "name profilePic" },
+          { path: "senderId", select: "name" },
+          { path: "receiverId", select: "name" },
         ],
       },
     ]);
@@ -187,25 +196,104 @@ export const markAsRead = async (req, res) => {
   try {
     const { userId } = req.user;
     const { id: chattingWithUserId } = req.params;
+
+    // Reset unread count
     await User.findByIdAndUpdate(userId, {
       $set: { [`unreadCounts.${chattingWithUserId}`]: 0 },
     });
 
+    // Mark all unread messages as read
     await Message.updateMany(
       {
         senderId: chattingWithUserId,
         receiverId: userId,
         isRead: false,
       },
-      { $set: { isRead: true, seenAt: new Date() } }
+      {
+        $set: {
+          isRead: true,
+        },
+        $push: {
+          readBy: { userId: userId, readAt: new Date() },
+        },
+      }
     );
 
+    // Fetch current user info for emit (the one who read)
+    const reader = await User.findById(userId).select("name profilePic");
+
+    // Emit to sender's socket (chattingWithUserId)
     io.to(getReceiverSocketId(chattingWithUserId)).emit("markMessageRead", {
       chattingWithUserId: userId,
-      seenAt: new Date(),
+      readBy: [
+        {
+          readAt: new Date(),
+          userId: {
+            _id: reader._id,
+            name: reader.name,
+            profilePic: reader.profilePic,
+          },
+        },
+      ],
     });
 
     res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const toggleReaction = async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const { userId } = req.user;
+
+    const message = await Message.findById(messageId);
+
+    if (!message) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Message not found" });
+    }
+
+    const existingReactionIndex = message.reactions.findIndex(
+      (r) => r.userId.toString() === userId.toString()
+    );
+
+    if (existingReactionIndex !== -1) {
+      // Same emoji → remove reaction
+      if (message.reactions[existingReactionIndex].emoji === emoji) {
+        message.reactions.splice(existingReactionIndex, 1);
+      } else {
+        // Change emoji
+        message.reactions[existingReactionIndex].emoji = emoji;
+        message.reactions[existingReactionIndex].reactedAt = new Date();
+      }
+    } else {
+      // Add new reaction
+      message.reactions.push({ userId, emoji });
+    }
+
+    await message.save();
+
+    const populated = await message.populate(
+      "reactions.userId",
+      "name profilePic"
+    );
+
+    // Emit to sender & receiver sockets
+    io.to(getReceiverSocketId(message.senderId)).emit(
+      "messageReaction",
+      populated
+    );
+    io.to(getReceiverSocketId(message.receiverId)).emit(
+      "messageReaction",
+      populated
+    );
+
+    res.json({ success: true, message: populated });
   } catch (err) {
     console.log(err);
     res.status(500).json({ success: false, message: err.message });

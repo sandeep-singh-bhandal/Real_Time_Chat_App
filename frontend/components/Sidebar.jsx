@@ -38,7 +38,7 @@ const Sidebar = () => {
     if (!socket) return;
 
     const handleNewMessage = (message) => {
-      const senderId = message.senderId;
+      const senderId = message.senderId._id;
 
       // unread count update
       setUnreadMessages((prev) => ({

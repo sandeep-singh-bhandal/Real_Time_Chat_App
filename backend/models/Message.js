@@ -21,13 +21,27 @@ const messageSchema = new mongoose.Schema(
         publicId: { type: String },
       },
     },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    readBy: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        readAt: Date,
+      },
+    ],
+    reactions: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        emoji: { type: String },
+        reactedAt: { type: Date, default: null },
+      },
+    ],
     isRead: {
       type: Boolean,
       default: false,
-    },
-    seenAt: {
-      type: Date,
-      default: null,
     },
     isEditted: {
       type: Boolean,
@@ -36,11 +50,6 @@ const messageSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false,
-    },
-    replyTo: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Message",
-      default: null,
     },
   },
   { timestamps: true }

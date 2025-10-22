@@ -4,6 +4,11 @@ import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
 import { formatMessageTime } from "../lib/utils";
 import { useAppContext } from "../context/AppContext";
+import toast from "react-hot-toast";
+import DeleteModal from "./DeleteModal";
+import MessageEditModal from "./MessageEditModal";
+import MessageInfoModal from "./MessageInfoModal";
+import EmojiPicker from "emoji-picker-react";
 import {
   Check,
   CheckCheck,
@@ -13,9 +18,9 @@ import {
   Trash,
   Pin,
   Info,
-  Delete,
   EllipsisVertical,
   Ban,
+  SmilePlus,
 } from "lucide-react";
 import {
   Dropdown,
@@ -24,10 +29,7 @@ import {
   DropdownItem,
   DropdownSection,
 } from "@heroui/react";
-import toast from "react-hot-toast";
-import DeleteModal from "./DeleteModal";
-import MessageEditModal from "./MessageEditModal";
-import MessageInfoModal from "./MessageInfoModal";
+import ReactionInfoModal from "./ReactionInfoModal";
 
 const ChatContainer = () => {
   const {
@@ -41,6 +43,7 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     socket,
     markAsRead,
+    axios,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
@@ -50,7 +53,18 @@ const ChatContainer = () => {
   const [replyMessage, setReplyMessage] = useState(null);
   const [showMessageEditingModal, setShowMessageEditingModal] = useState(false);
   const [showMessageDeleteModal, setShowMessageDeleteModal] = useState(false);
+  const [reactedMessage, setReactedMessage] = useState(null);
   const [messageInfo, setMessageInfo] = useState(null);
+  const [showEmojiPickerFor, setShowEmojiPickerFor] = useState(null);
+
+  const handleAddReaction = async (messageId, emoji) => {
+    try {
+      setShowEmojiPickerFor(null);
+      await axios.post(`api/message/react-message/${messageId}`, { emoji });
+    } catch (error) {
+      toast.error("Failed to add reaction");
+    }
+  };
 
   // Fetch messages & subscribe
   useEffect(() => {
@@ -71,11 +85,11 @@ const ChatContainer = () => {
   // Sockets
   useEffect(() => {
     if (!socket) return;
-    socket.on("markMessageRead", ({ chattingWithUserId, seenAt }) => {
+    socket.on("markMessageRead", ({ chattingWithUserId, readBy }) => {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.receiverId._id === chattingWithUserId
-            ? { ...msg, isRead: true, seenAt }
+            ? { ...msg, isRead: true, readBy }
             : msg
         )
       );
@@ -98,11 +112,17 @@ const ChatContainer = () => {
         )
       );
     });
+    socket.on("messageReaction", (message) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === message._id ? message : msg))
+      );
+    });
 
     return () => {
       socket.off("markMessageRead");
       socket.off("messageEditted");
       socket.off("messageDeleted");
+      socket.off("messageReaction");
     };
   }, [socket]);
 
@@ -123,6 +143,7 @@ const ChatContainer = () => {
   return (
     <div className="flex-1 flex flex-col overflow-auto relative">
       <ChatHeader />
+      {/* <EmojiPicker/> */}
 
       <div className="flex-1 overflow-y-scroll scrollbar-hide p-4 space-y-4">
         {user?._id &&
@@ -168,8 +189,21 @@ const ChatContainer = () => {
                       : (message.senderId._id || message.senderId) === user._id
                       ? "bg-[#0093e9] text-white"
                       : "bg-gray-300 text-black"
-                  } chat-bubble break-all whitespace-pre-wrap max-w-96`}
+                  } chat-bubble break-all whitespace-pre-wrap min-w-16 max-w-96 relative`}
                 >
+                  {/* Show Reactions */}
+                  {message.reactions?.length > 0 && (
+                    <div
+                      onClick={() => setReactedMessage(message)}
+                      className="flex border border-gray-400 absolute -bottom-4.5 right-1 bg-white/90 rounded-full px-0.5 cursor-pointer"
+                    >
+                      {message.reactions.map((reaction, i) => (
+                        <span key={i} className="text-md">
+                          {reaction.emoji}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {/* Chat Bubble For Images */}
                   {message.imageData.url ? (
                     message.isDeleted ? (
@@ -222,7 +256,9 @@ const ChatContainer = () => {
                             : "text-gray-700"
                         }`}
                       >
-                        {message.replyTo.senderId?.name || "Unknown User"}
+                        {message.replyTo.senderId._id === user._id
+                          ? "You"
+                          : message.replyTo.senderId?.name}
                       </p>
 
                       {message.replyTo.imageData?.url ? (
@@ -255,7 +291,8 @@ const ChatContainer = () => {
                         (message.senderId._id || message.senderId) === user._id
                           ? "mr-5"
                           : ""
-                      } ${message.replyTo && !message.isDeleted && "mr-25"} ${
+                      }
+                      ${message.replyTo && !message.isDeleted && "mr-25"} ${
                         message.isDeleted
                           ? (message.senderId._id || message.senderId) ===
                             user._id
@@ -384,12 +421,40 @@ const ChatContainer = () => {
                       )}
                       <DropdownItem
                         key="emojis"
-                        startContent={<Delete className="size-5" />}
+                        startContent={<SmilePlus className="size-5" />}
+                        onClick={() =>
+                          setShowEmojiPickerFor(
+                            showEmojiPickerFor === message._id
+                              ? null
+                              : message._id
+                          )
+                        }
                       >
-                        Emojies
+                        Add Reaction
                       </DropdownItem>
                     </DropdownMenu>
                   </Dropdown>
+                )}
+                {showEmojiPickerFor === message._id && (
+                  <div
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/20"
+                    onClick={() => setShowEmojiPickerFor(null)}
+                  >
+                    <div
+                      className="relative"
+                      onClick={(e) => e.stopPropagation()} // prevent backdrop click
+                    >
+                      <EmojiPicker
+                        skinTonesDisabled
+                        height={400}
+                        width={350}
+                        onEmojiClick={(emojiData) => {
+                          handleAddReaction(message._id, emojiData.emoji);
+                          setShowEmojiPickerFor(null);
+                        }}
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -418,6 +483,14 @@ const ChatContainer = () => {
         <MessageInfoModal
           messageInfo={messageInfo}
           setMessageInfo={setMessageInfo}
+        />
+      )}
+
+      {/* Reaction Info Modal */}
+      {reactedMessage && (
+        <ReactionInfoModal
+          reactedMessage={reactedMessage}
+          setReactedMessage={setReactedMessage}
         />
       )}
 

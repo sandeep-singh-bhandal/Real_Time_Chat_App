@@ -8,6 +8,7 @@ import {
   markAsRead,
   editMessage,
   deleteMessage,
+  toggleReaction,
 } from "../controllers/messageController.js";
 import { upload } from "../utils/multer.js";
 
@@ -16,6 +17,7 @@ const messageRouter = Router();
 messageRouter.get("/user", protectRoute, getUserForSidebar);
 messageRouter.get("/get-unread-messages", protectRoute, getUnreadCounts);
 messageRouter.patch("/edit-message", protectRoute, editMessage);
+messageRouter.post("/react-message/:messageId", protectRoute, toggleReaction);
 messageRouter.delete(
   "/delete-message/:deletedMessageId",
   protectRoute,
