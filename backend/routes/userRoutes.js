@@ -1,9 +1,11 @@
 import { Router } from "express";
 import {
+  blockUser,
   isAuth,
   login,
   logout,
   register,
+  unblockUser,
   updateProfile,
 } from "../controllers/userController.js";
 import {
@@ -19,6 +21,8 @@ userRouter.post("/signup", registerValidator, register);
 userRouter.post("/login", loginValidator, login);
 userRouter.get("/logout", logout);
 userRouter.get("/check-auth", protectRoute, isAuth);
+userRouter.post("/block/:userId", protectRoute, blockUser);
+userRouter.post("/unblock/:userId", protectRoute, unblockUser);
 
 userRouter.patch(
   "/update-profile",

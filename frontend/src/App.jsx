@@ -10,8 +10,8 @@ import { Toaster } from "react-hot-toast";
 import SignUpPage from "../pages/SignUpPage";
 
 const App = () => {
-  const { user, checkAuth, isCheckingAuth, theme } = useAppContext();
-
+  const { user, checkAuth, isCheckingAuth, theme   } = useAppContext();
+  
   useEffect(() => {
     checkAuth();
   }, []);

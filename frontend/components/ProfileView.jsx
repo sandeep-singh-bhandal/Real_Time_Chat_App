@@ -2,6 +2,7 @@ import { X, Phone, Clock, Mail } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export function ProfileView() {
   const {
@@ -10,12 +11,25 @@ export function ProfileView() {
     onlineUsers,
     socket,
     messages,
+    axios,
+    user,
   } = useAppContext();
   const [lastSeenTime, setLastSeenTime] = useState(null);
+  const [isUserBlocked, setIsUserBlocked] = useState(
+    user.blockedUsers.includes(selectedUser?._id)
+  );
 
   const medias = messages.filter((message) => {
     return message.imageData.url;
   });
+
+  const handleBlockUnblock = async (action) => {
+    const { data } = await axios.post(`api/user/${action}/${selectedUser._id}`);
+    data.success
+      ? (toast.success(data.message),
+        setIsUserBlocked(action === "block" ? true : false))
+      : toast.error(data.message);
+  };
 
   useEffect(() => {
     if (!socket || !selectedUser?._id) return;
@@ -121,8 +135,17 @@ export function ProfileView() {
             </div>
           </div>
 
-          <button className="bg-red-500 text-white py-2 rounded-lg mt-2 font-semibold cursor-pointer hover:bg-red-600 w-full">
-            Block
+          <button
+            onClick={(e) =>
+              handleBlockUnblock(e.target.innerText.toLowerCase())
+            }
+            className={`${
+              isUserBlocked
+                ? "bg-gray-500 hover:bg-gray-600"
+                : "bg-red-500 hover:bg-red-600"
+            } text-white py-2 rounded-lg mt-2 font-semibold cursor-pointer w-full`}
+          >
+            {isUserBlocked ? "Unblock" : "Block"}
           </button>
         </div>
       </div>

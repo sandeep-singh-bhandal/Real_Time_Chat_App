@@ -102,6 +102,7 @@ const Sidebar = () => {
               setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
               markAsRead(user._id);
               setIsReceiverProfileOpen(false);
+              
             }}
             className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors cursor-pointer ${
               selectedUser?._id === user._id

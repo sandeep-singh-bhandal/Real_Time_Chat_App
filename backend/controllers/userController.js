@@ -2,6 +2,7 @@ import generateToken from "../utils/tokenGenerator.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary";
+import { getReceiverSocketId, io } from "../utils/socket.js";
 
 //Registering User - /api/user/register
 export const register = async (req, res) => {
@@ -125,6 +126,46 @@ export const updateProfile = async (req, res) => {
       .json({ success: true, message: "Profile updated", updatedUser });
   } catch (err) {
     console.log(err.message);
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/user/block/:userId
+export const blockUser = async (req, res) => {
+  try {
+    const { userId } = req.user; // logged-in user
+    const { userId: toBlockId } = req.params;
+
+    await User.findByIdAndUpdate(userId, {
+      $addToSet: { blockedUsers: toBlockId },
+    });
+
+    io.to(getReceiverSocketId(toBlockId)).emit("userBlocked", {
+      blockedByUserId: userId,
+      blockedUserId: toBlockId,
+    });
+
+    res.json({ success: true, message: "User blocked successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// POST /api/user/unblock/:userId
+export const unblockUser = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { userId: toUnblockId } = req.params;
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { blockedUsers: toUnblockId },
+    });
+    io.to(getReceiverSocketId(toUnblockId)).emit("userUnblocked", {
+      unBlockedByUserId: userId,
+      unBlockedUserId: toUnblockId,
+    });
+    res.json({ success: true, message: "User unblocked successfully" });
+  } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
