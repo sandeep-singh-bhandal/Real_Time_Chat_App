@@ -1,4 +1,4 @@
-import { X, Phone, Clock, Mail } from "lucide-react";
+import { X,Clock, Mail } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { formatDate, formatDistanceToNow } from "date-fns";
 import { useEffect, useState } from "react";

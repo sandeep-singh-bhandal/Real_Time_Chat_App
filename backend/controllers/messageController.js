@@ -68,6 +68,16 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user.userId;
 
+
+    const receiver = await User.findById(receiverId);
+    if (receiver.blockedUsers.includes(senderId)) {
+      return res.json({ success: false, message: "You are blocked by this user" });
+    }
+    const sender = await User.findById(senderId);
+    if (sender.blockedUsers.includes(receiverId)) {
+      return res.json({ success: false, message: "Unable to send, you blocked this user" });
+    }
+
     let imageData = {};
     if (image) {
       const uploadResponse = await cloudinary.uploader.upload(image.path);
@@ -116,7 +126,7 @@ export const sendMessage = async (req, res) => {
     }
 
     // Send to client
-    res.status(201).json({ newMessage: populatedMessage });
+    res.status(201).json({ success: true, newMessage: populatedMessage });
   } catch (err) {
     console.error("sendMessage error:", err);
     res.status(500).json({ success: false, message: err.message });

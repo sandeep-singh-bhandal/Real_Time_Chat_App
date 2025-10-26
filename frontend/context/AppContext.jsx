@@ -85,7 +85,11 @@ export const AppContextProvider = ({ children }) => {
         `/api/message/send/${selectedUser._id}`,
         formData
       );
-      setMessages((prev) => [...prev, data.newMessage]);
+      if (data.success) {
+        setMessages((prev) => [...prev, data.newMessage]);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error);
     }
