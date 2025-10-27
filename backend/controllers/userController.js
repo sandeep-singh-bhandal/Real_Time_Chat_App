@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary";
 import { getReceiverSocketId, io } from "../utils/socket.js";
+import transporter from "../utils/nodemailer.js";
 
 //Registering User - /api/user/register
 export const register = async (req, res) => {
@@ -177,5 +178,104 @@ export const getBlockedUsers = async (req, res) => {
   } catch (error) {
     console.log(err);
     res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export const requestOtp = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.json({ success: false, message: "User not found" });
+    const code = Math.floor(100000 + Math.random() * 900000);
+    await User.findOneAndUpdate(
+      { email },
+      { otp: code, otpExpiry: Date.now() + 15 * 60 * 1000 }
+    );
+    await transporter.sendMail({
+      from: `"Chatty Admin" <mr.money.bhandal@gmail.com>`,
+      to: email,
+      subject: "Email Verification Code - Chatty",
+      text: `Your email verification code is ${code}.\nUse this to verify your email, the code is valid for 15 minutes only.`,
+    });
+
+    res.json({ success: true, message: "Code sent successfully" });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
+  }
+}
+
+export const verifyOtp = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+    if (!otp || otp.length < 6) {
+      return res.json({
+        success: false,
+        message: "Please enter the 6 digit code",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (user.otp === "" || user.otp !== otp) {
+      return res.json({
+        success: false,
+        message: "Incorrect Code",
+      });
+    }
+    if (user.otpExpiry < Date.now()) {
+      return res.json({
+        success: false,
+        message: "Otp Expired",
+      });
+    }
+    user.otp = "";
+    user.otpExpiry = null;
+    user.isEmailVerified = true;
+    await user.save();
+
+    res.json({ success: true, message: "Email verified" });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
+  }
+};
+
+export const changeEmail = async (req, res) => {
+  try {
+    const { newEmail } = req.body;
+    const { userId } = req.user;
+    const existingUser = await User.findOne({ email: newEmail });
+    if (existingUser) {
+      return res.json({ success: false, message: "Email already in use" });
+    }
+    await User.findByIdAndUpdate(userId, { email: newEmail, isEmailVerified: false });
+    res.json({ success: true, message: "Email updated successfully" });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
+  }
+};
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const { userId } = req.user;
+    const user = await User.findById(userId);
+    
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "Current password is incorrect" });
+    }
+    const isNewPasswordSameAsCurrent = await bcrypt.compare(newPassword, user.password);
+    if (isNewPasswordSameAsCurrent) {
+      return res.json({ success: false, message: "New password cannot be the same as the current password" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
   }
 }

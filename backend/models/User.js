@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     blockedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    isEmailVerified: {
+      type: Boolean,
+      default: false
+    },
+    otp: {
+      type: String,
+      default: ""
+    },
+    otpExpiry: {
+      type: Date,
+      default: null
+    }
   },
   { timestamps: true }
 );

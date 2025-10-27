@@ -1,8 +1,8 @@
 import { useState } from "react";
-import AccountSettings from "../components/AccountSettings";
-import ChatPreferences from "../components/ChatPreferences";
-import DeleteAccountSettingsPage from "../components/DeleteAccountSettingsPage";
-import PrivacySettings from "../components/PrivacySettings";
+import AccountSettings from "../components/settings/AccountSettings";
+import ChatPreferences from "../components/settings/ChatPreferences";
+import PrivacySettings from "../components/settings/PrivacySettings";
+import DeleteAccountSettingsPage from "../components/settings/DeleteAccountSettingsPage";
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("account");

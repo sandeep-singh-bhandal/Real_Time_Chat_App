@@ -23,6 +23,9 @@ export const AppContextProvider = ({ children }) => {
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState({});
+  const [showOtpForm, setShowOtpForm] = useState(false);
+  const [showChangeEmailForm, setShowChangeEmailForm] = useState(false);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
 
   const navigate = useNavigate();
 
@@ -141,6 +144,10 @@ export const AppContextProvider = ({ children }) => {
     isCheckingAuth,
     setIsCheckingAuth,
     checkAuth,
+    showChangeEmailForm,
+    setShowChangeEmailForm,
+    showChangePasswordForm,
+    setShowChangePasswordForm,
     getSidebarUsers,
     getMessages,
     unreadMessages,
@@ -156,6 +163,8 @@ export const AppContextProvider = ({ children }) => {
     setSidebarUsers,
     selectedUser,
     setSelectedUser,
+    showOtpForm,
+    setShowOtpForm,
     isSidebarUsersLoading,
     setIsSidebarUsersLoading,
     isMessagesLoading,
