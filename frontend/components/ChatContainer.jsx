@@ -371,9 +371,9 @@ const ChatContainer = () => {
                           Copy
                         </DropdownItem>
                       </DropdownSection>
-                      <DropdownSection showDivider>
-                        {(message.senderId._id || message.senderId) ===
-                          user._id && (
+                      {(message.senderId._id || message.senderId) ===
+                        user._id && (
+                        <DropdownSection showDivider>
                           <DropdownItem
                             key="edit"
                             startContent={<Edit className="size-5" />}
@@ -384,15 +384,6 @@ const ChatContainer = () => {
                           >
                             Edit
                           </DropdownItem>
-                        )}
-                        <DropdownItem
-                          key="pin"
-                          startContent={<Pin className="size-5" />}
-                        >
-                          Pin
-                        </DropdownItem>
-                        {(message.senderId._id || message.senderId) ===
-                          user._id && (
                           <DropdownItem
                             key="delete"
                             className="text-danger"
@@ -405,20 +396,18 @@ const ChatContainer = () => {
                           >
                             Delete
                           </DropdownItem>
-                        )}
-                      </DropdownSection>
-                      {(message.senderId._id || message.senderId) ===
-                        user._id && (
-                        <DropdownItem
-                          key="info"
-                          className="text-primary"
-                          color="primary"
-                          startContent={<Info className="size-5" />}
-                          onClick={() => setMessageInfo(message)}
-                        >
-                          Info
-                        </DropdownItem>
+                          <DropdownItem
+                            key="info"
+                            className="text-primary"
+                            color="primary"
+                            startContent={<Info className="size-5" />}
+                            onClick={() => setMessageInfo(message)}
+                          >
+                            Info
+                          </DropdownItem>
+                        </DropdownSection>
                       )}
+
                       <DropdownItem
                         key="emojis"
                         startContent={<SmilePlus className="size-5" />}

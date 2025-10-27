@@ -1,15 +1,14 @@
-import { Camera, Info, Mail, Phone, User } from "lucide-react";
+import { Camera, Info, Mail, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
 const ProfilePage = () => {
-  const { user, isUpdatingProfile, setIsUpdatingProfile, axios, navigate } =
+  const { user, isUpdatingProfile, setIsUpdatingProfile, axios, setUser, navigate } =
     useAppContext();
   const [profileImg, setProfileImg] = useState(null);
   const [updatedFormData, setUpdatedFormData] = useState({
     name: user?.name || null,
-    email: user?.email || null,
     bio: user?.bio || "Hey there! I am using Chatty!",
   });
 
@@ -33,7 +32,10 @@ const ProfilePage = () => {
 
     try {
       const { data } = await axios.patch("/api/user/update-profile", formData);
-      data.success ? toast.success(data.message) : toast.error(data.message);
+      data.success
+        ? (toast.success(data.message),
+          setUser({ ...user, name: data.updatedUser.name, bio: data.updatedUser.bio }))
+        : toast.error(data.message);
     } catch (error) {
       console.log(error);
     } finally {
@@ -115,18 +117,6 @@ const ProfilePage = () => {
                   name="name"
                   className="px-4 py-2.5 bg-base-200 rounded-lg w-full border"
                   value={updatedFormData.name}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-sm flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email Address
-                </div>
-                <input
-                  name="email"
-                  onChange={handleChange}
-                  className="px-4 py-2.5 bg-base-200 rounded-lg border w-full"
-                  value={updatedFormData.email}
                 />
               </div>
               <div className="space-y-1.5">

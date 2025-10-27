@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   blockUser,
+  getBlockedUsers,
   isAuth,
   login,
   logout,
@@ -21,6 +22,7 @@ userRouter.post("/signup", registerValidator, register);
 userRouter.post("/login", loginValidator, login);
 userRouter.get("/logout", logout);
 userRouter.get("/check-auth", protectRoute, isAuth);
+userRouter.get("/get-blocked-users", protectRoute, getBlockedUsers);
 userRouter.post("/block/:userId", protectRoute, blockUser);
 userRouter.post("/unblock/:userId", protectRoute, unblockUser);
 

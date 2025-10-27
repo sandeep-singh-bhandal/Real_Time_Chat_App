@@ -96,7 +96,7 @@ export const isAuth = async (req, res) => {
 };
 
 export const updateProfile = async (req, res) => {
-  const { name, email, bio } = req.body;
+  const { name, bio } = req.body;
   const profilePic = req.file;
   const { userId } = req.user;
 
@@ -109,18 +109,16 @@ export const updateProfile = async (req, res) => {
       userId,
       profilePic
         ? {
-            name,
-            email,
-            bio,
-            profilePic: uploadResponse.secure_url,
-          }
+          name,
+          bio,
+          profilePic: uploadResponse.secure_url,
+        }
         : {
-            name,
-            email,
-            bio,
-          },
+          name,
+          bio,
+        },
       { new: true }
-    );
+    ).select("name bio");
     res
       .status(200)
       .json({ success: true, message: "Profile updated", updatedUser });
@@ -166,6 +164,18 @@ export const unblockUser = async (req, res) => {
     });
     res.json({ success: true, message: "User unblocked successfully" });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+export const getBlockedUsers = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const blockedUsers = await User.findById(userId).select("blockedUsers").populate("blockedUsers", "name");
+    res.status(200).json({ success: true, blockedUsers: blockedUsers.blockedUsers });
+  } catch (error) {
+    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+}

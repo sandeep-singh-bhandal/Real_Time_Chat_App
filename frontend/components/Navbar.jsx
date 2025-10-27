@@ -1,11 +1,15 @@
-import { LogOut, MessageSquare, Settings, User, User2 } from "lucide-react";
+import { MessageSquare, SettingsIcon, User2 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { Link } from "react-router-dom";
-import toast from "react-hot-toast";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@heroui/react";
 
 const Navbar = () => {
-  const { user, axios, navigate, setUser, disconnectToSocket, setTheme } =
-    useAppContext();
+  const { user, navigate } = useAppContext();
   return (
     <header
       className="border-b border-base-300 fixed w-full top-0 z-40 
@@ -27,40 +31,33 @@ const Navbar = () => {
 
           <div className="flex items-center gap-2">
             {user && (
-              <>
-                <div>
-                  <div className="dropdown dropdown-hover dropdown-end ">
-                    <div
-                      tabIndex={0}
-                      role="button"
-                      className="[&_li>a:active]:bg-transparent"
-                    >
-                      <img
-                        className="aspect-[1/1] object-cover rounded-full w-10"
-                        src={user.profilePic}
-                        alt="Dp"
-                      />
-                    </div>
-                    <ul
-                      tabIndex="-1"
-                      className="dropdown-content menu bg-base-100 rounded-box z-1 w-42 p-2 shadow-sm border border-gray-400 "
-                    >
-                      <li className="flex gap-2">
-                        <div>
-                          <User className="size-4" />
-                          <Link to={"/profile"}>Profile</Link>
-                        </div>
-                      </li>
-                      <li className="flex gap-2">
-                        <div>
-                          <Settings className="size-4" />
-                          <Link to={"/settings"}>Settings</Link>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </>
+              <Dropdown>
+                <DropdownTrigger className="active:outline-none focus:outline-none cursor-pointer">
+                  <img
+                    src={user?.profilePic}
+                    className="size-10 object-cover rounded-full"
+                    alt="profile"
+                  />
+                </DropdownTrigger>
+                <DropdownMenu aria-label="Static Actions" className="group">
+                  <DropdownItem
+                    key="profile"
+                    onClick={() => navigate("/profile")}
+                    startContent={<User2 className="size-5" />}
+                  >
+                    Profile
+                  </DropdownItem>
+                  <DropdownItem
+                    key="copy"
+                    startContent={<SettingsIcon className="size-5" />}
+                    onClick={() => {
+                      navigate("/settings");
+                    }}
+                  >
+                    Settings
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
             )}
           </div>
         </div>
