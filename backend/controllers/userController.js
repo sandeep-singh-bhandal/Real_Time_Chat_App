@@ -193,8 +193,8 @@ export const requestOtp = async (req, res) => {
       { otp: code, otpExpiry: Date.now() + 15 * 60 * 1000 }
     );
 
-    console.log("BREVO_API_KEY:", process.env.BREVO_API_KEY ? "Loaded ✅" : "Missing ❌");
-    console.log("SENDER_EMAIL:", process.env.SENDER_EMAIL);
+    console.log("user", process.env.SMTP_USER ? "Loaded ✅" : "Missing ❌");
+    console.log("pass", process.env.SMTP_PASS);
 
     await transporter.sendMail({
       from: `"Chatty Admin" <mr.money.bhandal@gmail.com>`,
