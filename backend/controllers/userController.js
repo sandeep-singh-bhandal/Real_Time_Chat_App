@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary";
 import { getReceiverSocketId, io } from "../utils/socket.js";
-import transporter from "../utils/nodemailer.js";
+import { sendOtpEmail } from "../utils/sendOtpEmail.js";
 
 //Registering User - /api/user/register
 export const register = async (req, res) => {
@@ -192,13 +192,10 @@ export const requestOtp = async (req, res) => {
       { email },
       { otp: code, otpExpiry: Date.now() + 15 * 60 * 1000 }
     );
-    await transporter.sendMail({
-      from: `"Chatty Admin" <mr.money.bhandal@gmail.com>`,
-      to: email,
-      subject: "Email Verification Code - Chatty",
-      text: `Your email verification code is ${code}.\nUse this to verify your email, the code is valid for 15 minutes only.`,
-    });
 
+
+    await sendOtpEmail(email, code)
+    
     res.json({ success: true, message: "Code sent successfully" });
   } catch (err) {
     res.json({ success: false, error: err.message });
