@@ -5,12 +5,12 @@ import ProfilePage from "../pages/ProfilePage";
 import HomePage from "../pages/HomePage";
 import { useAppContext } from "../context/AppContext";
 import { useEffect } from "react";
-import { Loader } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import SignUpPage from "../pages/SignUpPage";
 
 const App = () => {
-  const { user, checkAuth, isCheckingAuth, theme } = useAppContext();
+  const { user, checkAuth, isCheckingAuth } = useAppContext();
 
   useEffect(() => {
     checkAuth();
@@ -19,16 +19,17 @@ const App = () => {
   if (isCheckingAuth) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <Loader className="size-10 animate-spin" />
+        <Loader2 className="size-10 animate-spin" />
         <span className="mt-2">
-          Please wait a bit longer, backend could be on sleep mode ( 10seconds max )
+          Please wait a bit longer, backend could be on sleep mode ( 10seconds
+          max )
         </span>
       </div>
     );
   }
 
   return (
-    <div data-theme={"corporate"}>
+    <div data-theme="corporate">
       <Navbar />
       <Routes>
         <Route
@@ -39,10 +40,13 @@ const App = () => {
           path="/signup"
           element={!user ? <SignUpPage /> : <Navigate to={"/"} />}
         />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route
+          path="/settings"
+          element={user ? <SettingsPage /> : <Navigate to={"/signup"} />}
+        />
         <Route
           path="/profile"
-          element={user ? <ProfilePage /> : <Navigate to={"/login"} />}
+          element={user ? <ProfilePage /> : <Navigate to={"/signup"} />}
         />
       </Routes>
       <Toaster />

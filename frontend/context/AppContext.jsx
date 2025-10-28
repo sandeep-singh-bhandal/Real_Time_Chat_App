@@ -12,7 +12,6 @@ export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [theme, setTheme] = useState("corporate");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isReceiverProfileOpen, setIsReceiverProfileOpen] = useState(false);
@@ -23,7 +22,10 @@ export const AppContextProvider = ({ children }) => {
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState({});
-
+  const [showOtpForm, setShowOtpForm] = useState(false);
+  const [showChangeEmailForm, setShowChangeEmailForm] = useState(false);
+  const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const navigate = useNavigate();
 
   const checkAuth = async () => {
@@ -85,7 +87,11 @@ export const AppContextProvider = ({ children }) => {
         `/api/message/send/${selectedUser._id}`,
         formData
       );
-      setMessages((prev) => [...prev, data.newMessage]);
+      if (data.success) {
+        setMessages((prev) => [...prev, data.newMessage]);
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
       toast.error(error);
     }
@@ -137,6 +143,10 @@ export const AppContextProvider = ({ children }) => {
     isCheckingAuth,
     setIsCheckingAuth,
     checkAuth,
+    showChangeEmailForm,
+    setShowChangeEmailForm,
+    showChangePasswordForm,
+    setShowChangePasswordForm,
     getSidebarUsers,
     getMessages,
     unreadMessages,
@@ -152,6 +162,8 @@ export const AppContextProvider = ({ children }) => {
     setSidebarUsers,
     selectedUser,
     setSelectedUser,
+    showOtpForm,
+    setShowOtpForm,
     isSidebarUsersLoading,
     setIsSidebarUsersLoading,
     isMessagesLoading,
@@ -162,8 +174,8 @@ export const AppContextProvider = ({ children }) => {
     setOnlineUsers,
     subscribeToMessages,
     unsubscribeFromMessages,
-    theme,
-    setTheme,
+    showDeleteAccountModal,
+    setShowDeleteAccountModal,
     socket,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

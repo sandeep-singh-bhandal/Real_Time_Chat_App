@@ -1,5 +1,5 @@
 import { Smile, X } from "lucide-react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../../context/AppContext";
 
 const ReactionInfoModal = ({ reactedMessage, setReactedMessage }) => {
   const { user } = useAppContext();

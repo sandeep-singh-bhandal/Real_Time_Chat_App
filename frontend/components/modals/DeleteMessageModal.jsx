@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../../context/AppContext";
 
-const DeleteModal = ({ setShowMessageDeleteModal, msgToBeDeleted }) => {
+const DeleteMessageModal = ({ setShowMessageDeleteModal, msgToBeDeleted }) => {
   const { selectedUser, axios } = useAppContext();
   // Message Deleting Handler
   const handleDeleteMessage = async (e) => {
@@ -65,4 +65,4 @@ const DeleteModal = ({ setShowMessageDeleteModal, msgToBeDeleted }) => {
   );
 };
 
-export default DeleteModal;
+export default DeleteMessageModal;

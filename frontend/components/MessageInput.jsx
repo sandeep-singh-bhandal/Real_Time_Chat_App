@@ -1,11 +1,13 @@
 import { useRef, useState } from "react";
 import { Image, Send, X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useEffect } from "react";
 
 const MessageInput = ({ replyMessage, setReplyMessage }) => {
+  const { sendMessage, socket, selectedUser, user, messages, setSidebarUsers } =
+    useAppContext();
   const [text, setText] = useState("");
   const [image, setImage] = useState();
-  const { sendMessage, socket, selectedUser, user, messages } = useAppContext();
   const fileInputRef = useRef();
   const typingTimeout = useRef(null);
   const textareaRef = useRef();
@@ -61,6 +63,38 @@ const MessageInput = ({ replyMessage, setReplyMessage }) => {
       handleSendMessage(e);
     }
   };
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on("userBlocked", ({ blockedByUserId, blockedUserId }) => {
+      setSidebarUsers((prev) =>
+        prev.map((u) =>
+          u._id === blockedByUserId
+            ? { ...u, blockedUsers: [...u.blockedUsers, blockedUserId] }
+            : u
+        )
+      );
+    });
+
+    socket.on("userUnblocked", ({ unBlockedByUserId, unBlockedUserId }) => {
+      setSidebarUsers((prev) =>
+        prev.map((u) =>
+          u._id === unBlockedByUserId
+            ? {
+                ...u,
+                blockedUsers: u.blockedUsers.filter(
+                  (id) => id !== unBlockedUserId
+                ),
+              }
+            : u
+        )
+      );
+    });
+    return () => {
+      socket.off("userBlocked");
+      socket.off("userUnblocked");
+    };
+  }, [socket]);
 
   return (
     <div className="p-4 w-full">
