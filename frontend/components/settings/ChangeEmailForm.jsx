@@ -37,7 +37,7 @@ const ChangeEmailForm = () => {
       className="bg-white text-gray-500 max-w-96 mx-4 md:p-6 p-4 text-left text-sm rounded shadow-[0px_0px_10px_0px] shadow-black/10"
     >
       <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
-        Change Your Email
+        Enter your new email
       </h2>
       <label htmlFor="email">Email</label>
       <input

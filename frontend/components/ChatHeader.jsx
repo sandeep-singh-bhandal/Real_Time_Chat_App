@@ -72,8 +72,6 @@ const ChatHeader = () => {
     return ""; // Hide if privacy disabled
   };
 
-  console.log(selectedUser.privacySettings);
-
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
@@ -88,6 +86,8 @@ const ChatHeader = () => {
                 src={
                   selectedUser.privacySettings.profilePictureVisibility
                     ? selectedUser.profilePic
+                      ? selectedUser.profilePic
+                      : "/avatar.png"
                     : "/avatar.png"
                 }
                 alt={selectedUser.name}

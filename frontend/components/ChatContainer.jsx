@@ -164,6 +164,8 @@ const ChatContainer = () => {
                         ? user?.profilePic || "/avatar.png"
                         : selectedUser.privacySettings.profilePictureVisibility
                         ? selectedUser?.profilePic
+                          ? selectedUser?.profilePic
+                          : "/avatar.png"
                         : "/avatar.png"
                     }
                     alt="profile pic"

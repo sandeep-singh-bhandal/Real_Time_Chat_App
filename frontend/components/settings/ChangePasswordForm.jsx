@@ -114,7 +114,7 @@ const ChangePasswordForm = () => {
           type={showNewPassword ? "text" : "password"}
           value={formData.newPassword}
           name="newPassword"
-          placeholder="Password"
+          placeholder="Set a New Password"
           autoComplete="off"
           className="bg-transparent text-gray-500 placeholder-gray-500 outline-none text-sm w-full h-full"
           onChange={(e) => {
@@ -141,9 +141,9 @@ const ChangePasswordForm = () => {
         </span>
       ) : typeof signUpError === "string" &&
         signUpError.toLowerCase().includes("incorrect") ? (
-        <span className="float-left mt-4">Confirm Password</span>
+        <span className="float-left mt-4">Confirm New Password</span>
       ) : (
-        <span className="float-left mt-4">Confirm Password</span>
+        <span className="float-left mt-4">Confirm New Password</span>
       )}
       <div
         className={`${
@@ -157,7 +157,7 @@ const ChangePasswordForm = () => {
         <input
           type={showConfirmPassword ? "text" : "password"}
           value={formData.confirmNewPassword}
-          placeholder="Confirm Password"
+          placeholder="Confirm your New Password"
           autoComplete="off"
           className="bg-transparent text-gray-500 placeholder-gray-500 outline-none text-sm w-full h-full"
           name="confirmNewPassword"
