@@ -34,7 +34,7 @@ const Navbar = () => {
               <Dropdown>
                 <DropdownTrigger className="active:outline-none focus:outline-none cursor-pointer">
                   <img
-                    src={user?.profilePic}
+                    src={user?.profilePic || "./avatar.png"}
                     className="size-10 object-cover rounded-full"
                     alt="profile"
                   />

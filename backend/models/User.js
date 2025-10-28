@@ -44,6 +44,39 @@ const userSchema = new mongoose.Schema(
     otpExpiry: {
       type: Date,
       default: null
+    },
+    chatPreferences: {
+      isReadReceiptEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      isTypingIndicatorEnabled: {
+        type: Boolean,
+        default: true,
+      },
+      isNotificationSoundEnabled: {
+        type: Boolean,
+        default: true,
+      },
+    },
+
+    privacySettings: {
+      lastSeenVisibility: {
+        type: Boolean,
+        default: true
+      },
+      onlineStatusVisibility: {
+        type: Boolean,
+        default: true
+      },
+      profilePictureVisibility: {
+        type: Boolean,
+        default: true
+      },
+      bioVisibility: {
+        type: Boolean,
+        default: true
+      }
     }
   },
   { timestamps: true }

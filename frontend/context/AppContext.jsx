@@ -12,7 +12,6 @@ export const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [theme, setTheme] = useState("corporate");
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isReceiverProfileOpen, setIsReceiverProfileOpen] = useState(false);
@@ -26,7 +25,7 @@ export const AppContextProvider = ({ children }) => {
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [showChangeEmailForm, setShowChangeEmailForm] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
-
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const navigate = useNavigate();
 
   const checkAuth = async () => {
@@ -175,8 +174,8 @@ export const AppContextProvider = ({ children }) => {
     setOnlineUsers,
     subscribeToMessages,
     unsubscribeFromMessages,
-    theme,
-    setTheme,
+    showDeleteAccountModal,
+    setShowDeleteAccountModal,
     socket,
   };
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -16,10 +16,8 @@ const messageSchema = new mongoose.Schema(
       type: String,
     },
     imageData: {
-      type: {
-        url: { type: String },
-        publicId: { type: String },
-      },
+      url: { type: String },
+      publicId: { type: String },
     },
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,

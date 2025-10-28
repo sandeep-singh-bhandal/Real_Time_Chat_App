@@ -94,51 +94,62 @@ const Sidebar = () => {
 
       {/* User List */}
       <div className="overflow-y-auto w-full py-3 [&::-webkit-scrollbar]:hidden scrollbar-none">
-        {filteredUsers?.map((user) => (
-          <button
-            key={user._id}
-            onClick={() => {
-              setSelectedUser(user);
-              setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
-              markAsRead(user._id);
-              setIsReceiverProfileOpen(false);
-              
-            }}
-            className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors cursor-pointer ${
-              selectedUser?._id === user._id
-                ? "bg-base-300 ring-1 ring-base-300"
-                : ""
-            }`}
-          >
-            {/* Profile Pic */}
-            <div className="relative flex-shrink-0 w-12 h-12">
-              <img
-                src={user.profilePic || "/avatar.png"}
-                alt={user.name}
-                className="w-12 h-12 rounded-full object-cover"
-              />
-              {/* Green dot if online */}
-              {onlineUsers.includes(user._id) && (
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 rounded-full ring-2 ring-white" />
-              )}
-            </div>
-
-            {/* Name + Status */}
-            <div className="hidden lg:flex flex-col text-left min-w-0 flex-1">
-              <div className="font-medium truncate">{user.name}</div>
-              <div className="text-sm text-gray-500">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+        {Array.isArray(filteredUsers) &&
+          filteredUsers?.map((user) => (
+            <button
+              key={user._id}
+              onClick={() => {
+                setSelectedUser(user);
+                setUnreadMessages((prev) => ({ ...prev, [user._id]: 0 }));
+                markAsRead(user._id);
+                setIsReceiverProfileOpen(false);
+              }}
+              className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors cursor-pointer ${
+                selectedUser?._id === user._id
+                  ? "bg-base-300 ring-1 ring-base-300"
+                  : ""
+              }`}
+            >
+              {/* Profile Pic */}
+              <div className="relative flex-shrink-0 w-12 h-12">
+                <img
+                  src={
+                    user.privacySettings.profilePictureVisibility
+                      ? user.profilePic
+                        ? user.profilePic
+                        : "/avatar.png"
+                      : "/avatar.png"
+                  }
+                  alt={user.name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                {/* Green dot if online */}
+                {onlineUsers.includes(user._id) &&
+                  user.privacySettings.onlineStatusVisibility && (
+                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 rounded-full ring-2 ring-white" />
+                  )}
               </div>
-            </div>
 
-            {/* Unread badge */}
-            {unreadMessages[user._id] > 0 && (
-              <span className="ml-auto p-1 px-2 rounded-full text-xs bg-blue-500 text-white">
-                {unreadMessages[user._id]}
-              </span>
-            )}
-          </button>
-        ))}
+              {/* Name + Status */}
+              <div className="hidden lg:flex flex-col text-left min-w-0 flex-1">
+                <div className="font-medium truncate">{user.name}</div>
+                <div className="text-sm text-gray-500">
+                  {user.privacySettings.onlineStatusVisibility
+                    ? onlineUsers.includes(user._id)
+                      ? "Online"
+                      : "Offline"
+                    : null}
+                </div>
+              </div>
+
+              {/* Unread badge */}
+              {unreadMessages && unreadMessages[user?._id] > 0 && (
+                <span className="ml-auto p-1 px-2 rounded-full text-xs bg-blue-500 text-white">
+                  {unreadMessages[user._id]}
+                </span>
+              )}
+            </button>
+          ))}
 
         {filteredUsers.length === 0 && (
           <div className="text-center text-zinc-500 py-4">No users</div>

@@ -12,8 +12,6 @@ const MessageInput = ({ replyMessage, setReplyMessage }) => {
   const typingTimeout = useRef(null);
   const textareaRef = useRef();
 
-  console.log(selectedUser, user);
-
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !image) return;

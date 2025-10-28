@@ -1,12 +1,37 @@
 import { useState } from "react";
+import { useAppContext } from "../../context/AppContext";
+import toast from "react-hot-toast";
 
 const ChatPreferences = () => {
-    const [chatPrefs, setChatPrefs] = useState({
-        theme: "light",
-        fontSize: "medium",
-        readReceipts: true,
-        typingIndicator: true,
-      });
+  const { user, axios } = useAppContext();
+  const [chatPrefs, setChatPrefs] = useState(user.chatPreferences);
+
+  const handleChatPrefSettings = async (updatedPrefs) => {
+    try {
+      const { data } = await axios.post(
+        "/api/user/update-chat-preferences",
+        updatedPrefs
+      );
+      if (data.success) {
+        toast.success("Success");
+      } else {
+        toast.error(data.message || "Failed to update preferences");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleToggle = (key) => {
+    const updatedPrefs = {
+      ...chatPrefs,
+      [key]: !chatPrefs[key],
+    };
+    setChatPrefs(updatedPrefs);
+    handleChatPrefSettings(updatedPrefs);
+  };
+
   return (
     <div className="space-y-6">
       <div className="mb-8">
@@ -14,60 +39,6 @@ const ChatPreferences = () => {
           Chat Preferences
         </h2>
         <p className="text-gray-500 mt-2">Customize your chat experience</p>
-      </div>
-
-      {/* Theme Section */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">Theme</h3>
-        <div className="space-y-3">
-          {["light", "dark", "auto"].map((theme) => (
-            <label
-              key={theme}
-              className="flex items-center gap-3 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="theme"
-                value={theme}
-                checked={chatPrefs.theme === theme}
-                onChange={(e) =>
-                  setChatPrefs({ ...chatPrefs, theme: e.target.value })
-                }
-                className="w-4 h-4 text-blue-600"
-              />
-              <span className="text-gray-700 capitalize text-sm">
-                {theme === "auto" ? "Auto (System)" : theme}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* Font Size Section */}
-      <div className="bg-white rounded-lg p-6 border border-gray-200">
-        <h3 className="text-base font-semibold text-gray-900 mb-4">
-          Font Size
-        </h3>
-        <div className="space-y-3">
-          {["small", "medium", "large"].map((size) => (
-            <label
-              key={size}
-              className="flex items-center gap-3 cursor-pointer"
-            >
-              <input
-                type="radio"
-                name="fontSize"
-                value={size}
-                checked={chatPrefs.fontSize === size}
-                onChange={(e) =>
-                  setChatPrefs({ ...chatPrefs, fontSize: e.target.value })
-                }
-                className="w-4 h-4 text-blue-600"
-              />
-              <span className="text-gray-700 capitalize text-sm">{size}</span>
-            </label>
-          ))}
-        </div>
       </div>
 
       {/* Read Receipts Toggle */}
@@ -81,19 +52,14 @@ const ChatPreferences = () => {
           </p>
         </div>
         <button
-          onClick={() =>
-            setChatPrefs({
-              ...chatPrefs,
-              readReceipts: !chatPrefs.readReceipts,
-            })
-          }
+          onClick={() => handleToggle("isReadReceiptEnabled")}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-            chatPrefs.readReceipts ? "bg-blue-600" : "bg-gray-300"
+            chatPrefs.isReadReceiptEnabled ? "bg-blue-600" : "bg-gray-300"
           }`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-              chatPrefs.readReceipts ? "translate-x-6" : "translate-x-1"
+              chatPrefs.isReadReceiptEnabled ? "translate-x-6" : "translate-x-1"
             }`}
           />
         </button>
@@ -110,23 +76,21 @@ const ChatPreferences = () => {
           </p>
         </div>
         <button
-          onClick={() =>
-            setChatPrefs({
-              ...chatPrefs,
-              typingIndicator: !chatPrefs.typingIndicator,
-            })
-          }
+          onClick={() => handleToggle("isNotificationSoundEnabled")}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-            chatPrefs.typingIndicator ? "bg-blue-600" : "bg-gray-300"
+            chatPrefs.isNotificationSoundEnabled ? "bg-blue-600" : "bg-gray-300"
           }`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-              chatPrefs.typingIndicator ? "translate-x-6" : "translate-x-1"
+              chatPrefs.isNotificationSoundEnabled
+                ? "translate-x-6"
+                : "translate-x-1"
             }`}
           />
         </button>
       </div>
+
       {/* Typing Indicator Toggle */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
         <div>
@@ -138,25 +102,22 @@ const ChatPreferences = () => {
           </p>
         </div>
         <button
-          onClick={() =>
-            setChatPrefs({
-              ...chatPrefs,
-              typingIndicator: !chatPrefs.typingIndicator,
-            })
-          }
+          onClick={() => handleToggle("isTypingIndicatorEnabled")}
           className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${
-            chatPrefs.typingIndicator ? "bg-blue-600" : "bg-gray-300"
+            chatPrefs.isTypingIndicatorEnabled ? "bg-blue-600" : "bg-gray-300"
           }`}
         >
           <span
             className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-              chatPrefs.typingIndicator ? "translate-x-6" : "translate-x-1"
+              chatPrefs.isTypingIndicatorEnabled
+                ? "translate-x-6"
+                : "translate-x-1"
             }`}
           />
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ChatPreferences
+export default ChatPreferences;

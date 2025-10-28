@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
+import { useAppContext } from "../context/AppContext";
+import { formatMessageTime } from "../lib/utils";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
-import { formatMessageTime } from "../lib/utils";
-import { useAppContext } from "../context/AppContext";
 import toast from "react-hot-toast";
-import DeleteModal from "./DeleteModal";
-import MessageEditModal from "./MessageEditModal";
-import MessageInfoModal from "./MessageInfoModal";
+import DeleteModal from "./modals/DeleteMessageModal";
+import MessageEditModal from "./modals/MessageEditModal";
+import MessageInfoModal from "./modals/MessageInfoModal";
+import ReactionInfoModal from "./modals/ReactionInfoModal";
 import EmojiPicker from "emoji-picker-react";
 import {
   Check,
@@ -16,7 +17,6 @@ import {
   Copy,
   Edit,
   Trash,
-  Pin,
   Info,
   EllipsisVertical,
   Ban,
@@ -29,7 +29,6 @@ import {
   DropdownItem,
   DropdownSection,
 } from "@heroui/react";
-import ReactionInfoModal from "./ReactionInfoModal";
 
 const ChatContainer = () => {
   const {
@@ -163,7 +162,9 @@ const ChatContainer = () => {
                     src={
                       (message.senderId._id || message.senderId) === user?._id
                         ? user?.profilePic || "/avatar.png"
-                        : selectedUser?.profilePic || "/avatar.png"
+                        : selectedUser.privacySettings.profilePictureVisibility
+                        ? selectedUser?.profilePic
+                        : "/avatar.png"
                     }
                     alt="profile pic"
                   />
@@ -184,7 +185,7 @@ const ChatContainer = () => {
               >
                 <div
                   className={`${
-                    message.imageData.url
+                    message?.imageData?.url
                       ? "bg-transparent"
                       : (message.senderId._id || message.senderId) === user._id
                       ? "bg-[#0093e9] text-white"
@@ -205,7 +206,7 @@ const ChatContainer = () => {
                     </div>
                   )}
                   {/* Chat Bubble For Images */}
-                  {message.imageData.url ? (
+                  {message?.imageData?.url ? (
                     message.isDeleted ? (
                       <span
                         className={`${
@@ -336,12 +337,23 @@ const ChatContainer = () => {
                   )}
 
                   {/* Message Seen Status  */}
+
                   {(message.senderId._id || message.senderId) === user._id &&
                     !message.isDeleted &&
                     (message.isRead ? (
-                      <CheckCheck className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                      <CheckCheck
+                        className={`${
+                          !selectedUser.chatPreferences.isReadReceiptEnabled &&
+                          "hidden"
+                        } h-4 w-4 absolute right-1.5 bottom-1.5`}
+                      />
                     ) : (
-                      <Check className="h-4 w-4 absolute right-1.5 bottom-1.5" />
+                      <Check
+                        className={`${
+                          !selectedUser.chatPreferences.isReadReceiptEnabled &&
+                          "hidden"
+                        }  h-4 w-4 absolute right-1.5 bottom-1.5`}
+                      />
                     ))}
                 </div>
 

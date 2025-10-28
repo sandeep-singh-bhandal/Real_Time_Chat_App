@@ -10,6 +10,7 @@ const AccountSettings = () => {
   const [loading, setLoading] = useState(false);
   const {
     user,
+    setUser,
     axios,
     showOtpForm,
     setShowOtpForm,
@@ -17,7 +18,23 @@ const AccountSettings = () => {
     setShowChangeEmailForm,
     showChangePasswordForm,
     setShowChangePasswordForm,
+    navigate,
+    disconnectToSocket,
   } = useAppContext();
+
+  const logout = async () => {
+    try {
+      const { data } = await axios.get("/api/user/logout");
+      if (data.success) {
+        toast.success(data.message);
+        navigate("/signup");
+        setUser(null);
+        disconnectToSocket();
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
   const handleRequestCode = async () => {
     try {
       setLoading(true);
@@ -110,6 +127,12 @@ const AccountSettings = () => {
           Change Password
         </button>
       </div>
+      <button
+        onClick={logout}
+        className="bg-gradient-to-r from-red-500 to-rose-600 hover:opacity-90 text-white w-full cursor-pointer py-3 rounded-lg  text-sm font-medium"
+      >
+        Log out
+      </button>
       {showOtpForm && (
         <div
           onClick={() => setShowOtpForm(false)}

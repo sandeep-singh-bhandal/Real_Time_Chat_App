@@ -21,6 +21,7 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      lastSeen: Date.now(),
     });
 
     // Genrating JWT token and setting it in cookies
@@ -61,7 +62,7 @@ export const login = async (req, res) => {
     res.json({
       success: true,
       message: "Log in Successfully",
-      user: { _id: user._id, email: user.email, name: user.name },
+      user: { _id: user._id, email: user.email, name: user.name, profilePic: user.profilePic },
     });
   } catch (err) {
     console.log(err.message);
@@ -261,7 +262,7 @@ export const changePassword = async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const { userId } = req.user;
     const user = await User.findById(userId);
-    
+
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
       return res.json({ success: false, message: "Current password is incorrect" });
@@ -274,6 +275,39 @@ export const changePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
     res.json({ success: true, message: "Password changed successfully" });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
+  }
+}
+
+export const chatPreferences = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { isReadReceiptEnabled, isTypingIndicatorEnabled, isNotificationSoundEnabled } = req.body;
+    const user = await User.findById(userId);
+    user.chatPreferences.isReadReceiptEnabled = isReadReceiptEnabled;
+    user.chatPreferences.isTypingIndicatorEnabled = isTypingIndicatorEnabled;
+    user.chatPreferences.isNotificationSoundEnabled = isNotificationSoundEnabled;
+    await user.save();
+    res.json({ success: true, message: "Chat preferences updated successfully", chatPreferences: user.chatPreferences });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+    console.log(err.message);
+  }
+}
+
+export const privacySettingsController = async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { lastSeenVisibility, onlineStatusVisibility, profilePictureVisibility, bioVisibility } = req.body;
+    const user = await User.findById(userId);
+    user.privacySettings.lastSeenVisibility = lastSeenVisibility;
+    user.privacySettings.onlineStatusVisibility = onlineStatusVisibility;
+    user.privacySettings.profilePictureVisibility = profilePictureVisibility;
+    user.privacySettings.bioVisibility = bioVisibility;
+    await user.save();
+    res.json({ success: true, message: "Privacy settings updated successfully", privacySettings: user.privacySettings });
   } catch (err) {
     res.json({ success: false, error: err.message });
     console.log(err.message);
