@@ -193,7 +193,6 @@ export const requestOtp = async (req, res) => {
       { otp: code, otpExpiry: Date.now() + 15 * 60 * 1000 }
     );
 
-
     await transporter.sendMail({
       from: `"Chatty Admin" <mr.money.bhandal@gmail.com>`,
       to: email,
