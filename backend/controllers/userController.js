@@ -196,16 +196,8 @@ export const requestOtp = async (req, res) => {
     await transporter.sendMail({
       from: `"Chatty Admin" <mr.money.bhandal@gmail.com>`,
       to: email,
-      subject: "Email Verification Code - Chatty",
+      subject: "Email Verification Code",
       text: `Your email verification code is ${code}.\nUse this to verify your email, the code is valid for 15 minutes only.`,
-    }).then(info => console.log("Mail sent: ", info)
-    ).catch(err => console.log("Mail error: ", err)
-    );
-
-    transporter.verify((error, success) => {
-      if (error) console.error("SMTP error", error);
-      else console.log("Success");
-
     })
 
     res.json({ success: true, message: "Code sent successfully" });
