@@ -77,7 +77,7 @@ const PrivacySettings = () => {
 
       {/* Last Seen */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">Last Seen</h3>
           <p className="text-sm text-gray-500 mt-1">
             Let others see when you were last active
@@ -101,7 +101,7 @@ const PrivacySettings = () => {
 
       {/* Online Status */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">
             Online Status
           </h3>
@@ -129,7 +129,7 @@ const PrivacySettings = () => {
 
       {/* Profile Picture */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">
             Profile Picture
           </h3>
@@ -157,7 +157,7 @@ const PrivacySettings = () => {
 
       {/* Bio Visibility */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">Bio</h3>
           <p className="text-sm text-gray-500 mt-1">
             Allow others to view your bio

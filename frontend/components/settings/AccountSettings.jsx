@@ -57,7 +57,7 @@ const AccountSettings = () => {
     }
   };
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="mb-8">
         <h2 className="text-3xl font-semibold text-gray-900">
           Account & Profile
@@ -72,7 +72,7 @@ const AccountSettings = () => {
         <h3 className="text-base font-semibold text-gray-900 mb-4">
           Email Address
         </h3>
-        <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
+        <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg max-sm:overflow-scroll focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900">
           {user?.email}
         </div>
         <div className="mt-4 flex items-center gap-2">

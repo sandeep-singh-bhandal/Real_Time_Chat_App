@@ -43,7 +43,7 @@ const ChatPreferences = () => {
 
       {/* Read Receipts Toggle */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">
             Read Receipts
           </h3>
@@ -67,7 +67,7 @@ const ChatPreferences = () => {
 
       {/* Notification Sound Toggle */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">
             Notification Sound
           </h3>
@@ -93,7 +93,7 @@ const ChatPreferences = () => {
 
       {/* Typing Indicator Toggle */}
       <div className="bg-white rounded-lg p-6 border border-gray-200 flex items-center justify-between">
-        <div>
+        <div className="max-sm:w-44">
           <h3 className="text-base font-semibold text-gray-900">
             Typing Indicator
           </h3>
