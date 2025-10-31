@@ -106,12 +106,14 @@ const ChatContainer = () => {
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === deletedMessageId
-            ? { ...msg, isDeleted: true, isEditted: false }
+            ? { ...msg, isDeleted: true, isEditted: false, reactions: [] }
             : msg
         )
       );
     });
     socket.on("messageReaction", (message) => {
+      console.log(message);
+      
       setMessages((prev) =>
         prev.map((msg) => (msg._id === message._id ? message : msg))
       );

@@ -180,6 +180,7 @@ export const deleteMessage = async (req, res) => {
     // Mark isDelete flag true
     targetMessage.isDeleted = true;
     targetMessage.isEditted = false;
+    targetMessage.reactions = []
     await targetMessage.save();
 
     io.emit("messageDeleted", { deletedMessageId });
@@ -289,8 +290,8 @@ export const toggleReaction = async (req, res) => {
     await message.save();
 
     const populated = await message.populate(
-      "reactions.userId",
-      "name profilePic"
+      "reactions.userId readBy.userId",
+      "name profilePic name profilePic"
     );
 
     // Emit to sender & receiver sockets
