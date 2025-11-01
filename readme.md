@@ -42,8 +42,7 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 - Group chat functionality 👥  
 - File / media sharing 📎  
-- Voice Messages 🔊 
-- Dedicated Settings Page ⚙️
+- Voice Messages 🔊
 
 ---
 
