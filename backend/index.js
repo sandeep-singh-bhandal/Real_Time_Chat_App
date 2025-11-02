@@ -9,7 +9,7 @@ import messageRouter from "./routes/messageRoutes.js";
 import { app, server } from "./utils/socket.js";
 
 const PORT = process.env.PORT || 3000;
-const allowedOrigins = ["http://localhost:5173", "https://real-time-chat-app-pink-tau.vercel.app"];
+const allowedOrigins = ["http://localhost:5173", "https://real-time-chat-app-xi-self.vercel.app"];
 
 // Connecting Mongo DB
 connectDB();
