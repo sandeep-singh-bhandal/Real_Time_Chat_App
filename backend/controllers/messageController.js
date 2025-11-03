@@ -32,8 +32,8 @@ export const getMessages = async (req, res) => {
           receiverId: senderId,
         },
       ],
-    })
-      .populate("senderId", "name profilePic")
+    }) 
+      .populate("senderId", "name profilePic")            // Populating the message for Frontend
       .populate("receiverId", "name profilePic")
       .populate({
         path: "replyTo",
@@ -68,8 +68,9 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user.userId;
 
-
     const receiver = await User.findById(receiverId);
+
+    // Checking Blocked Status
     if (receiver.blockedUsers.includes(senderId)) {
       return res.json({ success: false, message: "You are blocked by this user" });
     }
@@ -113,7 +114,7 @@ export const sendMessage = async (req, res) => {
       $inc: { [`unreadCounts.${senderId}`]: 1 },
     });
 
-    // Emit realtime message to receiver (and sender if needed)
+    // Emit realtime message to receiver and sender
     const receiverSocketId = getReceiverSocketId(receiverId);
     const senderSocketId = getReceiverSocketId(senderId);
 
@@ -125,7 +126,7 @@ export const sendMessage = async (req, res) => {
       io.to(senderSocketId).emit("newMessage", populatedMessage);
     }
 
-    // Send to client
+    // Response to client
     res.status(201).json({ success: true, newMessage: populatedMessage });
   } catch (err) {
     console.error("sendMessage error:", err);
@@ -156,6 +157,7 @@ export const editMessage = async (req, res) => {
     targetMessage.isEditted = true;
     await targetMessage.save();
 
+    // Emit edited message through socket
     io.emit("messageEditted", { messageId, newText: editedMessageText });
 
     res.json({ success: true, message: "Message edited successfully" });
@@ -182,6 +184,7 @@ export const deleteMessage = async (req, res) => {
     targetMessage.isEditted = false;
     await targetMessage.save();
 
+    // Emit deleted message id through socket
     io.emit("messageDeleted", { deletedMessageId });
 
     res.json({ success: true, message: "Message deleted successfully" });
@@ -273,7 +276,7 @@ export const toggleReaction = async (req, res) => {
     );
 
     if (existingReactionIndex !== -1) {
-      // Same emoji → remove reaction
+      // Same emoji => remove reaction
       if (message.reactions[existingReactionIndex].emoji === emoji) {
         message.reactions.splice(existingReactionIndex, 1);
       } else {

@@ -56,6 +56,8 @@ const ChatContainer = () => {
   const [messageInfo, setMessageInfo] = useState(null);
   const [showEmojiPickerFor, setShowEmojiPickerFor] = useState(null);
 
+
+  // Message Reacting Handler 
   const handleAddReaction = async (messageId, emoji) => {
     try {
       setShowEmojiPickerFor(null);

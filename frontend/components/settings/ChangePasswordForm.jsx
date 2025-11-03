@@ -25,6 +25,7 @@ const ChangePasswordForm = () => {
     });
   };
 
+  // Function to reset password 
   const handlePasswordReset = async (e) => {
     try {
       e.preventDefault();
@@ -32,6 +33,8 @@ const ChangePasswordForm = () => {
         return toast.error("Please enter your current password");
       if (!formData.newPassword)
         return toast.error("Please set a new password");
+
+      // validating new password using zod 
       newPasswordSchema.parse({
         newPassword: formData.newPassword,
         confirmNewPassword: formData.confirmNewPassword,

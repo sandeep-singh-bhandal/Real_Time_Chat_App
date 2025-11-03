@@ -4,8 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 
+// axios setup 
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
-axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = true;  // Enable cookies 
+
 let socket;
 
 export const AppContext = createContext();
@@ -77,6 +79,7 @@ export const AppContextProvider = ({ children }) => {
     await axios.patch(`/api/message/mark-as-read/${chattingWithUserId}`);
   };
 
+  //Sending the message
   const sendMessage = async (messageData) => {
     try {
       const formData = new FormData();

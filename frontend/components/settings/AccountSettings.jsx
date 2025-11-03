@@ -22,6 +22,7 @@ const AccountSettings = () => {
     disconnectToSocket,
   } = useAppContext();
 
+  // Function to logout user 
   const logout = async () => {
     try {
       const { data } = await axios.get("/api/user/logout");
@@ -35,6 +36,8 @@ const AccountSettings = () => {
       toast.error("Something went wrong");
     }
   };
+
+  // Function to request otp to verify email 
   const handleRequestCode = async () => {
     try {
       setLoading(true);

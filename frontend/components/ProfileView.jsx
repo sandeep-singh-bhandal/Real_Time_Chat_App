@@ -22,7 +22,7 @@ export function ProfileView() {
 
   const medias = messages.filter((msg) => msg?.imageData?.url);
 
-  // ✅ Handle Block / Unblock User
+  // Handle Block / Unblock User
   const handleBlockUnblock = async (action) => {
     try {
       const { data } = await axios.post(
@@ -37,7 +37,7 @@ export function ProfileView() {
     }
   };
 
-  // ✅ Update last seen when user disconnects
+  // Update last seen when user disconnects
   useEffect(() => {
     if (!socket || !selectedUser?._id) return;
     const handleDisconnect = ({ userId, lastSeen }) => {
@@ -47,10 +47,10 @@ export function ProfileView() {
     return () => socket.off("userDisconnected", handleDisconnect);
   }, [socket, selectedUser]);
 
-  // ✅ Helper: Check privacy visibility
+  // Helper: Check privacy visibility
   const canShow = (field) => selectedUser?.privacySettings?.[field];
 
-  // ✅ Compute status respecting privacy settings
+  // Compute status respecting privacy settings
   const getStatusText = () => {
     const { privacySettings = {} } = selectedUser;
 

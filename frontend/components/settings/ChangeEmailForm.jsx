@@ -9,10 +9,12 @@ const ChangeEmailForm = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Changing Email Handler 
   const handleEmailChange = async () => {
     if (!email) {
       return toast.error("Please enter an email");
     }
+    // validating email using zod 
     const parseResult = emailSchema.safeParse(email);
     if (!parseResult.success) {
       return toast.error("Please enter a valid email");

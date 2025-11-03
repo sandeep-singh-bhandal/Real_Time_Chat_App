@@ -34,6 +34,7 @@ const OtpForm = ({ emailToBeVerified }) => {
     setOtp(code);
   };
 
+  // Function to verify OTP 
   const handleCodeSubmit = async (e) => {
     e.preventDefault();
     try {

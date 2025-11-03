@@ -16,7 +16,7 @@ export const register = async (req, res) => {
       return res.json({ success: false, message: "User Already Exists" });
 
     // Creating the user
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);  // hashing the password
     const user = await User.create({
       name,
       email,
@@ -49,14 +49,15 @@ export const login = async (req, res) => {
         message: "Incorrect Email and Password ",
       });
 
+    // checking if password correct or not 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch)
       return res.json({
         success: false,
         message: "Incorrect Email or Password ",
       });
 
+    // assigning token if credentials are correct 
     generateToken(user._id, res);
 
     res.json({
@@ -105,7 +106,7 @@ export const updateProfile = async (req, res) => {
   try {
     let uploadResponse;
     if (profilePic) {
-      uploadResponse = await cloudinary.uploader.upload(profilePic.path);
+      uploadResponse = await cloudinary.uploader.upload(profilePic.path); // uploading to cloudinary
     }
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -113,7 +114,7 @@ export const updateProfile = async (req, res) => {
         ? {
           name,
           bio,
-          profilePic: uploadResponse.secure_url,
+          profilePic: uploadResponse.secure_url,       // user can choose to not to have a profilePic
         }
         : {
           name,
@@ -187,13 +188,17 @@ export const requestOtp = async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ email });
     if (!user) return res.json({ success: false, message: "User not found" });
+    
+    // generating random 6 digit otp 
     const code = Math.floor(100000 + Math.random() * 900000);
+
+    // saving the otp and otp expiry in DB to verify
     await User.findOneAndUpdate(
       { email },
       { otp: code, otpExpiry: Date.now() + 15 * 60 * 1000 }
     );
 
-
+    // Sending otp via BREVO 
     await sendOtpEmail(email, code)
     
     res.json({ success: true, message: "Code sent successfully" });
@@ -226,6 +231,8 @@ export const verifyOtp = async (req, res) => {
         message: "Otp Expired",
       });
     }
+
+    // Set otp and otpExpiry to empty if verified 
     user.otp = "";
     user.otpExpiry = null;
     user.isEmailVerified = true;
@@ -264,10 +271,14 @@ export const changePassword = async (req, res) => {
     if (!isMatch) {
       return res.json({ success: false, message: "Current password is incorrect" });
     }
+
+    // Checking if new and current are same 
     const isNewPasswordSameAsCurrent = await bcrypt.compare(newPassword, user.password);
     if (isNewPasswordSameAsCurrent) {
       return res.json({ success: false, message: "New password cannot be the same as the current password" });
     }
+
+    // Hashing and updating the new password 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
