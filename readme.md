@@ -7,7 +7,7 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 ## 🌐 Live Demo
 
-[💻 View Live Project](https://real-time-chat-app-pink-tau.vercel.app/)  
+[💻 View Live Project](https://real-time-chat-app-xi-self.vercel.app/)  
 
 ---
 
@@ -42,8 +42,7 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 - Group chat functionality 👥  
 - File / media sharing 📎  
-- Voice Messages 🔊 
-- Dedicated Settings Page ⚙️
+- Voice Messages 🔊
 
 ---
 
@@ -96,13 +95,17 @@ cd realtime-chat-app
    CLOUDINARY_API_KEY=your_api_key
    CLOUDINARY_API_SECRET=your_api_secret
 
+   #For Sending Emails
+   BREVO_API_KEY=YOUR_BREVO_API_KEY
+
+
    ```
 
    For Frontend
 
    ```bash
    #Backend Url
-   VITE_BACKEND_URL=http://localhost:3000
+   VITE_BACKEND_URL=your_backend_url
    ```
 
 4. Run the project
@@ -120,3 +123,29 @@ cd realtime-chat-app
    cd frontend
    npm run dev
    ```
+
+# Project Screenshots
+
+### 1. Homepage
+
+![Homepage](images/homepage.png)
+
+### 2. Chat Box
+
+![Chat Box ](images/chatbox.png)
+
+### 3. Profile Page
+
+![Profile Page](images/profile_page.png)
+
+### 4. Settings
+
+![Settings](images/settings.png)
+
+### 5. Reactions
+
+![Reactions](images/reactions.png)
+
+### 6. Message Info
+
+![Message Info](images/message_info.png)
