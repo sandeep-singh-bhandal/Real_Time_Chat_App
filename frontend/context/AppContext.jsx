@@ -84,7 +84,7 @@ export const AppContextProvider = ({ children }) => {
           const newScrollHeight = container.scrollHeight;
           container.scrollTop =
             newScrollHeight - (prevScrollHeight + prevScrollTop);
-        }, 0);
+        }, 5);
       }
     } catch (error) {
       console.log(error);

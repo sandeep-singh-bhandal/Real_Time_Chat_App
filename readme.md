@@ -26,6 +26,16 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 ---
 
+## ⚡ Performance Improvements
+
+
+1. **Problem 1 :** Loading large chat history caused noticeable lag (~350ms) (Measured Locally) 
+   - **Solution:** Implemented **pagination**, i.e. loading chunks of messages instead of loading entire chat at once  
+   - **Result:**  
+      - Latency reduced from **350ms → <100ms** (Measured Locally) 
+      - Efficient handling of hundreds of messages  
+---
+
 ## 🛠️ Tech Stack
 
 | Layer      | Technologies           |
