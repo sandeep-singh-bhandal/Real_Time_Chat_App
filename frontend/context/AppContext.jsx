@@ -1,12 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 
-// axios setup 
+// axios setup
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
-axios.defaults.withCredentials = true;  // Enable cookies 
+axios.defaults.withCredentials = true; // Enable cookies
 
 let socket;
 
@@ -18,17 +18,21 @@ export const AppContextProvider = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isReceiverProfileOpen, setIsReceiverProfileOpen] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [sidebarUsers, setSidebarUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isSidebarUsersLoading, setIsSidebarUsersLoading] = useState(false);
-  const [isMessagesLoading, setIsMessagesLoading] = useState(false);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [unreadMessages, setUnreadMessages] = useState({});
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [showChangeEmailForm, setShowChangeEmailForm] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [isNewMessageReceived, setIsNewMessageReceived] = useState(false);
   const navigate = useNavigate();
+  const chatContainerRef = useRef(null);
 
   const checkAuth = async () => {
     try {
@@ -56,11 +60,32 @@ export const AppContextProvider = ({ children }) => {
     }
   };
 
-  const getMessages = async (userId) => {
-    setIsMessagesLoading(true);
+  const getMessages = async (userId, pageToFetch) => {
+    if (!hasMore || isMessagesLoading) return;
+
+    const container = chatContainerRef.current;
+    const prevScrollHeight = container.scrollHeight;
+    const prevScrollTop = container.scrollTop;
+
+    if (pageToFetch === 1) setIsMessagesLoading(true);
     try {
-      const { data } = await axios.get(`/api/message/${userId}`);
-      setMessages(data.messages);
+      const { data } = await axios.get(
+        `/api/message/${userId}?page=${pageToFetch}&limit=50`
+      );
+      const newMessages = data.messages;
+      if (newMessages.length < 50) {
+        setHasMore(false); // no more messages left
+      }
+      // Prepend old messages to current list
+      setMessages((prev) => [...newMessages, ...prev]);
+
+      if (pageToFetch > 1 && container) {
+        setTimeout(() => {
+          const newScrollHeight = container.scrollHeight;
+          container.scrollTop =
+            newScrollHeight - (prevScrollHeight + prevScrollTop);
+        }, 0);
+      }
     } catch (error) {
       console.log(error);
     } finally {
@@ -103,6 +128,7 @@ export const AppContextProvider = ({ children }) => {
   const subscribeToMessages = () => {
     if (!selectedUser) return;
     socket.on("newMessage", (newMsg) => {
+      setIsNewMessageReceived(true);
       if (newMsg.senderId._id !== selectedUser._id) return;
       setMessages((prev) => [...prev, newMsg]);
     });
@@ -142,9 +168,16 @@ export const AppContextProvider = ({ children }) => {
     user,
     setUser,
     isUpdatingProfile,
+    page,
+    setPage,
+    hasMore,
+    setHasMore,
     setIsUpdatingProfile,
     isCheckingAuth,
     setIsCheckingAuth,
+    isNewMessageReceived,
+    setIsNewMessageReceived,
+    chatContainerRef,
     checkAuth,
     showChangeEmailForm,
     setShowChangeEmailForm,

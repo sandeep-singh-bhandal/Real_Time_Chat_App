@@ -19,8 +19,15 @@ export const getUserForSidebar = async (req, res) => {
 
 export const getMessages = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; 
+    const limit = parseInt(req.query.limit) || 50; 
+    const skip = (page - 1) * limit;
     const { id: receiverId } = req.params;
     const senderId = req.user.userId;
+
+    console.time("fetchMessage")
+
+    // Finding Messages 
     const messages = await Message.find({
       $or: [
         {
@@ -32,8 +39,11 @@ export const getMessages = async (req, res) => {
           receiverId: senderId,
         },
       ],
-    }) 
-      .populate("senderId", "name profilePic")            // Populating the message for Frontend
+    })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("senderId", "name profilePic")      // Populating the message for Frontend
       .populate("receiverId", "name profilePic")
       .populate({
         path: "replyTo",
@@ -54,7 +64,9 @@ export const getMessages = async (req, res) => {
         populate: { path: "userId", select: "name profilePic" },
       });
 
-    res.status(200).json({ messages });
+    console.timeEnd("fetchMessage");
+
+    res.status(200).json({ messages: messages.reverse() });
   } catch (error) {
     console.log(error.message);
     res.status(500).json({ success: false, message: error.message });
@@ -68,14 +80,20 @@ export const sendMessage = async (req, res) => {
     const { id: receiverId } = req.params;
     const senderId = req.user.userId;
 
-    const receiver = await User.findById(receiverId);
+    const users = await User.find(
+      { _id: { $in: [senderId, receiverId] } },
+      { blockedUsers: 1 }
+    );
 
-    // Checking Blocked Status
+    const receiver = users.find(u => u._id.toString() === receiverId);
+    const sender = users.find(u => u._id.toString() === senderId);
+    // Blocked status checks
     if (receiver.blockedUsers.includes(senderId)) {
+      console.timeEnd('CheckBlocked');
       return res.json({ success: false, message: "You are blocked by this user" });
     }
-    const sender = await User.findById(senderId);
     if (sender.blockedUsers.includes(receiverId)) {
+      console.timeEnd('CheckBlocked');
       return res.json({ success: false, message: "Unable to send, you blocked this user" });
     }
 
@@ -86,7 +104,7 @@ export const sendMessage = async (req, res) => {
       imageData.publicId = uploadResponse.public_id;
     }
 
-    // Create message
+    // Create message in DB
     const newMessage = await Message.create({
       senderId,
       receiverId,
@@ -95,7 +113,6 @@ export const sendMessage = async (req, res) => {
       replyTo: JSON.parse(replyTo)?._id || null,
     });
 
-    // Populate sender, receiver, and reply info for frontend
     const populatedMessage = await newMessage.populate([
       { path: "senderId", select: "name" },
       { path: "receiverId", select: "name" },
@@ -114,17 +131,12 @@ export const sendMessage = async (req, res) => {
       $inc: { [`unreadCounts.${senderId}`]: 1 },
     });
 
-    // Emit realtime message to receiver and sender
+    // Emit realtime message
     const receiverSocketId = getReceiverSocketId(receiverId);
     const senderSocketId = getReceiverSocketId(senderId);
 
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", populatedMessage);
-    }
-
-    if (senderSocketId) {
-      io.to(senderSocketId).emit("newMessage", populatedMessage);
-    }
+    if (receiverSocketId) io.to(receiverSocketId).emit("newMessage", populatedMessage);
+    if (senderSocketId) io.to(senderSocketId).emit("newMessage", populatedMessage);
 
     // Response to client
     res.status(201).json({ success: true, newMessage: populatedMessage });
@@ -182,6 +194,7 @@ export const deleteMessage = async (req, res) => {
     // Mark isDelete flag true
     targetMessage.isDeleted = true;
     targetMessage.isEditted = false;
+    targetMessage.reactions = []
     await targetMessage.save();
 
     // Emit deleted message id through socket

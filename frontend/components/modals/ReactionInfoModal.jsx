@@ -53,7 +53,7 @@ const ReactionInfoModal = ({ reactedMessage, setReactedMessage }) => {
                 <li key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
-                      src={reaction.userId?.profilePic || "/default-avatar.png"}
+                      src={reaction.userId?.profilePic || "/avatar.png"}
                       alt={reaction.userId.name}
                       className="w-8 h-8 rounded-full object-cover border border-gray-300 dark:border-zinc-700"
                     />

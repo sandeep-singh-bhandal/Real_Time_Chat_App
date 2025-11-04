@@ -43,6 +43,13 @@ const ChatContainer = () => {
     socket,
     markAsRead,
     axios,
+    page,
+    setPage,
+    hasMore,
+    setHasMore,
+    chatContainerRef,
+    isNewMessageReceived,
+    setIsNewMessageReceived,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
@@ -56,8 +63,7 @@ const ChatContainer = () => {
   const [messageInfo, setMessageInfo] = useState(null);
   const [showEmojiPickerFor, setShowEmojiPickerFor] = useState(null);
 
-
-  // Message Reacting Handler 
+  // Message Reacting Handler
   const handleAddReaction = async (messageId, emoji) => {
     try {
       setShowEmojiPickerFor(null);
@@ -67,21 +73,47 @@ const ChatContainer = () => {
     }
   };
 
-  // Fetch messages & subscribe
+  // Fetch messages on scroll
+  const handleScroll = (e) => {
+    const container = e.target;
+    const { scrollTop } = container;
+    // If user scrolled to top -> fetch older messages
+    if (scrollTop === 0 && hasMore && !isMessagesLoading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getMessages(selectedUser._id, nextPage);
+    }
+  };
+
+  // Fetch initial messages & subscribe
   useEffect(() => {
     if (!selectedUser?._id || !user?._id) return;
-    getMessages(selectedUser._id);
+    setPage(1);
+    setHasMore(true);
+    getMessages(selectedUser._id, 1);
     subscribeToMessages();
     return () => unsubscribeFromMessages();
   }, [selectedUser, user]);
 
-  // Scroll to last message when messages update
+
+  // Scroll to bottom on initial loading
   useEffect(() => {
-    if (messages.length > prevMessagesLength.current) {
+    if (!isMessagesLoading && messages.length > 0) {
       messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-    prevMessagesLength.current = messages.length;
-  }, [messages]);
+  }, [isMessagesLoading, selectedUser?._id]);
+
+  // Scroll to last message when messages update
+  useEffect(() => {
+    const container = chatContainerRef.current;
+    if (!container) return;
+
+    // Scroll to bottom only if user is already near bottom
+    if (isNewMessageReceived) {
+      messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    setIsNewMessageReceived(false);
+  }, [isNewMessageReceived]);
 
   // Sockets
   useEffect(() => {
@@ -108,7 +140,7 @@ const ChatContainer = () => {
       setMessages((prev) =>
         prev.map((msg) =>
           msg._id === deletedMessageId
-            ? { ...msg, isDeleted: true, isEditted: false }
+            ? { ...msg, isDeleted: true, isEditted: false, reactions: [] }
             : msg
         )
       );
@@ -146,7 +178,11 @@ const ChatContainer = () => {
       <ChatHeader />
       {/* <EmojiPicker/> */}
 
-      <div className="flex-1 overflow-y-scroll scrollbar-hide p-4 space-y-4">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-scroll scrollbar-hide p-4 space-y-4"
+        onScroll={handleScroll}
+      >
         {user?._id &&
           messages?.map((message, index) => (
             <div
