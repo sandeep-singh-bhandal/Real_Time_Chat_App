@@ -21,6 +21,7 @@ import {
   EllipsisVertical,
   Ban,
   SmilePlus,
+  Loader2,
 } from "lucide-react";
 import {
   Dropdown,
@@ -50,6 +51,7 @@ const ChatContainer = () => {
     chatContainerRef,
     isNewMessageReceived,
     setIsNewMessageReceived,
+    isOlderMessagesLoading,
   } = useAppContext();
 
   const messageEndRef = useRef(null);
@@ -95,7 +97,6 @@ const ChatContainer = () => {
     return () => unsubscribeFromMessages();
   }, [selectedUser, user]);
 
-
   // Scroll to bottom on initial loading
   useEffect(() => {
     if (!isMessagesLoading && messages.length > 0) {
@@ -107,9 +108,7 @@ const ChatContainer = () => {
   useEffect(() => {
     const container = chatContainerRef.current;
     if (!container) return;
-
-    // Scroll to bottom only if user is already near bottom
-    if (isNewMessageReceived) {
+    if (isNewMessageReceived && !isOlderMessagesLoading) {
       messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
     setIsNewMessageReceived(false);
@@ -183,6 +182,11 @@ const ChatContainer = () => {
         className="flex-1 overflow-y-scroll scrollbar-hide p-4 space-y-4"
         onScroll={handleScroll}
       >
+        {isOlderMessagesLoading && (
+          <div className="absolute top-20 left-1/2 -translate-x-1/2 z-10 bg-white/70 backdrop-blur-sm rounded-full p-2 shadow-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-gray-600" />
+          </div>
+        )}
         {user?._id &&
           messages?.map((message, index) => (
             <div

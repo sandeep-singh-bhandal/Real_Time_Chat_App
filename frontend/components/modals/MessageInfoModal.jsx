@@ -1,3 +1,4 @@
+import { format, formatDate } from "date-fns";
 import { Info, X } from "lucide-react";
 
 const MessageInfoModal = ({ setMessageInfo, messageInfo }) => {
@@ -25,7 +26,7 @@ const MessageInfoModal = ({ setMessageInfo, messageInfo }) => {
         </div>
 
         {/* Message bubble */}
-        <div className="p-5 border-b border-gray-200 dark:border-zinc-700">
+        <div className="sm:px-5 pt-5 max-sm:p-5 border-b border-gray-200 dark:border-zinc-700">
           {messageInfo.imageData?.url && (
             <img
               src={messageInfo.imageData.url}
@@ -48,6 +49,9 @@ const MessageInfoModal = ({ setMessageInfo, messageInfo }) => {
               </p>
             </div>
           )}
+          <div className="text-gray-500 text-sm my-2 ml-1 max-sm:hidden">
+            sent on {format(messageInfo.createdAt, "PPPPp")}
+          </div>
         </div>
 
         {/* Sent / Seen info */}

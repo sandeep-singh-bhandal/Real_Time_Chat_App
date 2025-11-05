@@ -31,6 +31,7 @@ export const AppContextProvider = ({ children }) => {
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [isNewMessageReceived, setIsNewMessageReceived] = useState(false);
+  const [isOlderMessagesLoading, setIsOlderMessagesLoading] = useState(false);
   const navigate = useNavigate();
   const chatContainerRef = useRef(null);
 
@@ -64,32 +65,54 @@ export const AppContextProvider = ({ children }) => {
     if (!hasMore || isMessagesLoading) return;
 
     const container = chatContainerRef.current;
-    const prevScrollHeight = container.scrollHeight;
-    const prevScrollTop = container.scrollTop;
+    const prevScrollHeight = container?.scrollHeight || 0;
+    const prevScrollTop = container?.scrollTop || 0;
 
-    if (pageToFetch === 1) setIsMessagesLoading(true);
+    pageToFetch === 1
+      ? setIsMessagesLoading(true)
+      : setIsOlderMessagesLoading(true);
+
     try {
       const { data } = await axios.get(
         `/api/message/${userId}?page=${pageToFetch}&limit=50`
       );
+
       const newMessages = data.messages;
+
       if (newMessages.length < 50) {
         setHasMore(false); // no more messages left
       }
-      // Prepend old messages to current list
-      setMessages((prev) => [...newMessages, ...prev]);
 
+      // Prepend old messages to current list
+      setMessages((prev) => {
+        if (prev.length && prev[0]?.receiverId?._id !== selectedUser._id) {
+          return newMessages;
+        }
+        return pageToFetch === 1 ? newMessages : [...newMessages, ...prev];
+      });
+
+      // Maintain scroll position after older messages load
       if (pageToFetch > 1 && container) {
-        setTimeout(() => {
+        const prevData = {
+          scrollHeight: prevScrollHeight,
+          scrollTop: prevScrollTop,
+        };
+
+        // Wait till DOM updates with new messages
+        requestAnimationFrame(() => {
           const newScrollHeight = container.scrollHeight;
           container.scrollTop =
-            newScrollHeight - (prevScrollHeight + prevScrollTop);
-        }, 5);
+            newScrollHeight - (prevData.scrollHeight - prevData.scrollTop);
+        });
       }
     } catch (error) {
       console.log(error);
     } finally {
-      setIsMessagesLoading(false);
+      pageToFetch === 1
+        ? setIsMessagesLoading(false)
+        : setIsOlderMessagesLoading(false);
+
+      setHasMore(true);
     }
   };
 
@@ -177,6 +200,7 @@ export const AppContextProvider = ({ children }) => {
     setIsCheckingAuth,
     isNewMessageReceived,
     setIsNewMessageReceived,
+    isOlderMessagesLoading,
     chatContainerRef,
     checkAuth,
     showChangeEmailForm,
