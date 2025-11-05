@@ -28,12 +28,51 @@ Supports personal chats, advanced messaging features, and real-time updates for 
 
 ## ⚡ Performance Improvements
 
+**Problem:**  
+Loading large chat history caused noticeable UI lag (~350ms locally). Fetching all messages at once was inefficient, especially for users with thousands of messages.
 
-1. **Problem 1 :** Loading large chat history caused noticeable lag (~350ms) (Measured Locally) 
-   - **Solution:** Implemented **pagination**, i.e. loading chunks of messages instead of loading entire chat at once  
-   - **Result:**  
-      - Latency reduced from **350ms → <100ms** (Measured Locally) 
-      - Efficient handling of hundreds of messages  
+---
+
+**Approach Considered:**  
+
+1. **Skip & Limit Pagination (Implemented)**  
+   - **How it works:**  
+     ```js
+     db.messages.find(...).skip(n).limit(pageSize)
+     ```  
+   - **Pros:**  
+     - Simple and easy to implement  
+     - Works well for small to medium datasets  
+   - **Cons / Trade-offs:**  
+     - Slower for very large datasets (older messages)  
+     - Not ideal for extremely long chat histories  
+
+2. **Cursor-Based Pagination (Alternative, Not Used)**  
+   - **How it works:**  
+     ```js
+     db.messages.find({ _id: { $lt: lastMessageId } }).limit(pageSize)
+     ```  
+     Tracks the last fetched message in each chunk.  
+   - **Pros:**  
+     - Efficient for large datasets  
+     - Consistent results even if new messages are added  
+   - **Cons / Trade-offs:**  
+     - Slightly more complex to implement  
+     - Frontend needs to track the last fetched message  
+
+---
+
+**Decision:**  
+Used **skip & limit pagination** for simplicity. It handles the current dataset sizes efficiently. Cursor-based pagination can be considered later if chat histories grow very large.
+
+---
+
+**Impact / Result:**  
+- Latency reduced from **~350ms → <100ms** locally  
+- Smooth handling of hundreds of messages without UI lag  
+- Simple implementation with minimal frontend changes
+
+
 ---
 
 ## 🛠️ Tech Stack
