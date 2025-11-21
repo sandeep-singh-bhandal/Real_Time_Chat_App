@@ -2,7 +2,6 @@ import { useState } from "react";
 import AccountSettings from "../components/settings/AccountSettings";
 import ChatPreferences from "../components/settings/ChatPreferences";
 import PrivacySettings from "../components/settings/PrivacySettings";
-import DeleteAccountSettingsPage from "../components/settings/DeleteAccountSettingsPage";
 
 export default function SettingsPage() {
   const [activeSection, setActiveSection] = useState("account");
@@ -10,7 +9,6 @@ export default function SettingsPage() {
     { id: "account", title: "Account & Profile" },
     { id: "chat", title: "Chat Preferences" },
     { id: "privacy", title: "Privacy Settings" },
-    { id: "delete", title: "Delete Account" },
   ];
 
   return (
@@ -43,7 +41,6 @@ export default function SettingsPage() {
             {activeSection === "account" && <AccountSettings />}
             {activeSection === "chat" && <ChatPreferences />}
             {activeSection === "privacy" && <PrivacySettings />}
-            {activeSection === "delete" && <DeleteAccountSettingsPage />}
           </div>
         </div>
       </div>
